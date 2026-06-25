@@ -1,0 +1,178 @@
+@import "tailwindcss";
+
+/* ── Enable class-based dark mode ── */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Luxury Serif Display Fonts */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
+
+  /* Brand Color Palette */
+  --color-ivory: #FAF7F2;
+  --color-ivory-light: #FDFBF8;
+  --color-ivory-dark: #F5F0E8;
+  --color-warm-white: #F8F6F3;
+  --color-cream: #F0EBE3;
+  --color-charcoal: #2C2C2C;
+  --color-charcoal-light: #4A4A4A;
+  --color-charcoal-muted: #6B6B6B;
+  --color-terracotta: #C7694F;
+  --color-terracotta-light: #D4826B;
+  --color-terracotta-dark: #A8553E;
+  --color-sage: #9CAF88;
+  --color-sage-light: #B5C4A4;
+  --color-blush: #E8C4C4;
+  --color-blush-light: #F0D6D6;
+  --color-gold: #C9A94E;
+  --color-gold-light: #DCC07A;
+
+  /* Semantic colors (light defaults) */
+  --color-primary: var(--color-terracotta);
+  --color-primary-light: var(--color-terracotta-light);
+  --color-primary-dark: var(--color-terracotta-dark);
+  --color-accent: var(--color-gold);
+  --color-surface: var(--color-ivory);
+  --color-surface-alt: var(--color-cream);
+  --color-text: var(--color-charcoal);
+  --color-text-secondary: var(--color-charcoal-muted);
+  --color-border: #E5E0D8;
+  --color-border-light: #EDE9E2;
+  --color-success: #7CB583;
+  --color-error: #C45A5A;
+  --color-warning: #D4A853;
+}
+
+/* Base Styles */
+@layer base {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--color-text);
+    background-color: var(--color-ivory);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: 1.2;
+  }
+
+  /* Premium Selection */
+  ::selection {
+    background-color: var(--color-terracotta);
+    color: white;
+  }
+}
+
+/* Custom Utility Classes */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  .bg-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, var(--color-charcoal) 0%, var(--color-terracotta) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-warm {
+    background: linear-gradient(135deg, var(--color-terracotta) 0%, var(--color-gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-ivory);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-charcoal-muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-charcoal);
+}
+
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   DARK MODE — overrides applied when html.dark is set
+══════════════════════════════════════════════════════════════════════ */
+:root.dark {
+  color-scheme: dark;
+
+  /* Backgrounds */
+  --color-ivory:       #1A1814;
+  --color-ivory-light: #211F1B;
+  --color-ivory-dark:  #141210;
+  --color-warm-white:  #1E1C18;
+  --color-cream:       #252219;
+
+  /* Text — charcoal token flips to near-white for body text in dark mode */
+  --color-charcoal:       #F0EDE8;
+  --color-charcoal-light: #D8D4CE;
+  --color-charcoal-muted: #9A9590;
+
+  /* Keep a stable dark-charcoal for components that need it (footer, admin sidebar) */
+  --color-charcoal-fixed: #2C2C2C;
+
+  /* Borders */
+  --color-border:       #2E2B25;
+  --color-border-light: #3A3630;
+
+  /* Surface */
+  --color-surface:     #1A1814;
+  --color-surface-alt: #252219;
+
+  /* Brand accent stays terracotta (readable on dark) */
+  --color-terracotta:       #D4826B;
+  --color-terracotta-light: #E09A85;
+  --color-terracotta-dark:  #C7694F;
+  --color-gold:             #D4AF5E;
+  --color-sage:             #A8BE94;
+}
+
+/* Dark body background + text */
+.dark body {
+  background-color: var(--color-ivory);
+  color: var(--color-charcoal);
+}
+
+/* Dark scrollbar */
+.dark ::-webkit-scrollbar-track { background: var(--color-ivory); }
+.dark ::-webkit-scrollbar-thumb { background: #3a3630; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #4a4540; }
+
+/* Smooth theme transition — only on background and border, NOT text color (avoids hover flash) */
+.dark body, .dark header, .dark main, .dark footer, .dark section, .dark div, .dark nav, .dark aside {
+  transition: background-color 180ms ease, border-color 180ms ease;
+}
