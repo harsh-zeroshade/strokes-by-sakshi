@@ -2,7 +2,15 @@
   publish = "dist"
   command = "npm run build"
 
+  # Vite environment variables must be present at build time.
+  # Otherwise, frontend falls back to localhost:8000 and products won't load.
+  environment = {
+    VITE_API_URL = "https://strokes-by-sakshi.zya.me/api"
+    VITE_STORAGE_URL = "https://strokes-by-sakshi.zya.me/storage"
+  }
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
