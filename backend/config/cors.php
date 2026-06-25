@@ -25,6 +25,8 @@ return [
         'http://localhost:3000',
         'http://127.0.0.1:3000',
         'http://localhost:4173',
+        'https://strokes-by-sakshi.zya.me',
+        'https://strokes-by-sakshi.netlify.app',
     ],
 
     'allowed_origins_patterns' => [],
