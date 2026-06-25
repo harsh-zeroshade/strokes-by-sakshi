@@ -1,8 +1,11 @@
 # TODO - Fix frontend product visibility (API connection)
 
-- [x] Confirm current Netlify env vars / set correct API base URL for VITE_API_URL
-- [x] Update `frontend/netlify.toml` to define `VITE_API_URL` and `VITE_STORAGE_URL`
-- [ ] Rebuild frontend and redeploy to Netlify
+- [x] Frontend was calling wrong backend (localhost), causing connection refused
+- [x] Reverted invalid TOML change in `frontend/netlify.toml` (Netlify parse error)
+- [ ] Set Netlify build env vars `VITE_API_URL` and `VITE_STORAGE_URL` (Netlify UI/CLI)
+- [ ] Commit & push
+- [ ] Redeploy on Netlify
 - [ ] Verify network calls to `/api/products`, `/api/collections` return 200 and products render
+
 
 

@@ -1,0 +1,4 @@
+# Add these as Netlify build environment variables (UI or CLI), not in netlify.toml.
+VITE_API_URL=https://strokes-by-sakshi.zya.me/api
+VITE_STORAGE_URL=https://strokes-by-sakshi.zya.me/storage
+
