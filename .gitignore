@@ -65,6 +65,9 @@ auth.json
 /composer.lock
 /backend/composer.lock
 
+# Zip files
+*.zip
+
 # NPM
 /package-lock.json
 /backend/package-lock.json
