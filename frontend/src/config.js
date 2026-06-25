@@ -1,5 +1,6 @@
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-export const STORAGE_URL = import.meta.env.VITE_STORAGE_URL || 'http://localhost:8000/storage';
+export const API_URL = import.meta.env.VITE_API_URL || 'https://strokes-by-sakshi.zya.me/api';
+export const STORAGE_URL = import.meta.env.VITE_STORAGE_URL || 'https://strokes-by-sakshi.zya.me/storage';
+
 
 export const SITE_CONFIG = {
   name: 'Strokes by Sakshi',
