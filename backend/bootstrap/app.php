@@ -16,9 +16,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'cors' => \App\Http\Middleware\CorsMiddleware::class,
         ]);
-
-        // Add custom CORS to global middleware stack
-        $middleware->prepend(\App\Http\Middleware\CorsMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

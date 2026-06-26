@@ -20,35 +20,7 @@ Route::get('/cors-test', function () {
     ]);
 });
 
-// Handle CORS preflight requests
-Route::options('/{any}', function (Request $request) {
-    $response = response()->json([], 200);
-    
-    // Explicitly set CORS headers
-    $origin = $request->headers->get('Origin');
-    $allowedOrigins = [
-        'https://strokes-by-sakshi.netlify.app',
-        'https://strokes-by-sakshi.zya.me',
-        'http://localhost:5173',
-        'http://127.0.0.1:5173',
-    ];
-    
-    if (in_array($origin, $allowedOrigins)) {
-        $response->headers->set('Access-Control-Allow-Origin', $origin);
-    }
-    
-    $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Session-ID, Origin');
-    $response->headers->set('Access-Control-Allow-Credentials', 'true');
-    $response->headers->set('Access-Control-Expose-Headers', 'X-Session-ID');
-    $response->headers->set('Access-Control-Max-Age', '86400');
-    
-    if ($origin) {
-        $response->headers->set('Vary', 'Origin');
-    }
-    
-    return $response;
-})->where('any', '.*');
+// Handle CORS preflight requests — managed by Laravel's built-in CORS middleware (config/cors.php)
 
 /*
 |--------------------------------------------------------------------------
