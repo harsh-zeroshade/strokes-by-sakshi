@@ -7,65 +7,40 @@ use Illuminate\Http\UploadedFile;
 class CloudinaryService
 {
     private string $cloudName;
-    private string $apiKey;
-    private string $apiSecret;
+    private string $uploadPreset;
 
     public function __construct()
     {
-        $this->cloudName = env('CLOUDINARY_CLOUD_NAME', 'ddeakoucl');
-        $this->apiKey    = env('CLOUDINARY_API_KEY', '225348543345839');
-        $this->apiSecret = env('CLOUDINARY_API_SECRET', 'R5Jd-EuIqpohSp_ciOgIOjyIyEU');
+        $this->cloudName    = env('CLOUDINARY_CLOUD_NAME', 'ddeakoucl');
+        $this->uploadPreset = env('CLOUDINARY_UPLOAD_PRESET', 'dfllz22b');
     }
 
     /**
-     * Upload a file to Cloudinary and return the secure URL.
-     * Signature is generated per Cloudinary docs:
-     * https://cloudinary.com/documentation/authentication#generating_signatures
+     * Upload a file to Cloudinary using an unsigned upload preset.
      */
     public function upload(UploadedFile $file, string $folder = 'strokes-by-sakshi'): string
     {
-        $timestamp = time();
-
-        // Parameters must be sorted alphabetically before signing
-        $params = [
-            'folder'    => $folder,
-            'timestamp' => $timestamp,
-        ];
-        ksort($params);
-
-        // Build signature string: key=value&key=value + secret
-        $sigString = '';
-        foreach ($params as $k => $v) {
-            $sigString .= ($sigString ? '&' : '') . "{$k}={$v}";
-        }
-        $signature = sha1($sigString . $this->apiSecret);
-
         $url = "https://api.cloudinary.com/v1_1/{$this->cloudName}/image/upload";
-
-        $postFields = [
-            'file'      => new \CURLFile(
-                $file->getRealPath(),
-                $file->getMimeType() ?: 'image/jpeg',
-                $file->getClientOriginalName() ?: 'upload.jpg'
-            ),
-            'api_key'   => $this->apiKey,
-            'timestamp' => $timestamp,
-            'folder'    => $folder,
-            'signature' => $signature,
-        ];
 
         $ch = curl_init();
         curl_setopt_array($ch, [
             CURLOPT_URL            => $url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => $postFields,
+            CURLOPT_POSTFIELDS     => [
+                'file'          => new \CURLFile(
+                    $file->getRealPath(),
+                    $file->getMimeType() ?: 'image/jpeg',
+                    $file->getClientOriginalName() ?: 'upload.jpg'
+                ),
+                'upload_preset' => $this->uploadPreset,
+                'folder'        => $folder,
+            ],
             CURLOPT_TIMEOUT        => 60,
         ]);
 
         $response = curl_exec($ch);
         $error    = curl_error($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
         if ($error) {
@@ -83,13 +58,29 @@ class CloudinaryService
     }
 
     /**
+     * Extract Cloudinary public_id from a secure URL.
+     */
+    public function getPublicId(string $url): ?string
+    {
+        if (!str_contains($url, 'cloudinary.com')) {
+            return null;
+        }
+        preg_match('/\/v\d+\/(.+)\.[a-z]+$/i', $url, $matches);
+        return $matches[1] ?? null;
+    }
+
+    /**
      * Delete an image from Cloudinary by its public_id.
+     * Requires signed request — skipped if no API secret set.
      */
     public function destroy(string $publicId): void
     {
+        $apiKey    = env('CLOUDINARY_API_KEY', '225348543345839');
+        $apiSecret = env('CLOUDINARY_API_SECRET', 'R5Jd-EuIqpohSp_ciOgIOjyIyEU');
+
         $timestamp = time();
         $sigString = "public_id={$publicId}&timestamp={$timestamp}";
-        $signature = sha1($sigString . $this->apiSecret);
+        $signature = sha1($sigString . $apiSecret);
 
         $url = "https://api.cloudinary.com/v1_1/{$this->cloudName}/image/destroy";
 
@@ -100,7 +91,7 @@ class CloudinaryService
             CURLOPT_POST           => true,
             CURLOPT_POSTFIELDS     => http_build_query([
                 'public_id' => $publicId,
-                'api_key'   => $this->apiKey,
+                'api_key'   => $apiKey,
                 'timestamp' => $timestamp,
                 'signature' => $signature,
             ]),
@@ -108,17 +99,5 @@ class CloudinaryService
 
         curl_exec($ch);
         curl_close($ch);
-    }
-
-    /**
-     * Extract Cloudinary public_id from a secure URL.
-     */
-    public function getPublicId(string $url): ?string
-    {
-        if (!str_contains($url, 'cloudinary.com')) {
-            return null;
-        }
-        preg_match('/\/v\d+\/(.+)\.[a-z]+$/i', $url, $matches);
-        return $matches[1] ?? null;
     }
 }
