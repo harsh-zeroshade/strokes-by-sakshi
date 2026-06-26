@@ -176,3 +176,30 @@
 .dark body, .dark header, .dark main, .dark footer, .dark section, .dark div, .dark nav, .dark aside {
   transition: background-color 180ms ease, border-color 180ms ease;
 }
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   HOME PAGE — section parallax & mobile polish
+══════════════════════════════════════════════════════════════════════ */
+
+/* Ensure parallax wrapper children don't bleed on mobile */
+.parallax-section {
+  isolation: isolate;
+}
+
+/* Smooth scroll for all anchor jumps */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent horizontal overflow from parallax blobs */
+.overflow-x-hidden {
+  overflow-x: hidden;
+}
+
+/* Mobile: tighter line heights for large display headings */
+@media (max-width: 480px) {
+  .font-display {
+    line-height: 1.08;
+  }
+}

@@ -372,10 +372,10 @@ export default function HeroSection() {
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center text-center
-                      min-h-[100svh] pt-28 pb-28 px-4 sm:px-6">
+                      min-h-[100svh] pt-24 sm:pt-28 pb-20 sm:pb-28 px-5 sm:px-6">
 
         <motion.p {...fadeUp(0.2, 0.9)}
-          className="text-[11px] uppercase tracking-[0.36em] text-charcoal-muted dark:text-[#9A9590] font-medium mb-7">
+          className="text-[10px] sm:text-[11px] uppercase tracking-[0.3em] sm:tracking-[0.36em] text-charcoal-muted dark:text-[#9A9590] font-medium mb-5 sm:mb-7">
           Where Emotions Find Their Canvas
         </motion.p>
 
@@ -383,7 +383,7 @@ export default function HeroSection() {
           initial="hidden" animate="visible"
           variants={{ hidden:{}, visible:{ transition:{ staggerChildren:0.1, delayChildren:0.35 }}}}
           className="font-display text-charcoal dark:text-[#F0EDE8] leading-[1.06] tracking-tight"
-          style={{ fontSize:'clamp(3rem,8vw,92px)' }}
+          style={{ fontSize:'clamp(2.6rem,9vw,92px)' }}
         >
           <span className="block">
             {['Art','That'].map(w => (
@@ -403,32 +403,32 @@ export default function HeroSection() {
 
         <motion.div initial={{scaleX:0}} animate={{scaleX:1}}
           transition={{delay:1.0,duration:1.1,ease:[0.16,1,0.3,1]}}
-          className="mt-8 h-px w-20 origin-center"
+          className="mt-6 sm:mt-8 h-px w-16 sm:w-20 origin-center"
           style={{background:'linear-gradient(90deg,transparent,#c7694f,transparent)'}}/>
 
         <motion.p {...fadeUp(1.1, 0.9)}
-          className="mt-7 text-base sm:text-lg text-charcoal-muted dark:text-[#9A9590] max-w-md leading-relaxed">
+          className="mt-5 sm:mt-7 text-sm sm:text-base lg:text-lg text-charcoal-muted dark:text-[#9A9590] max-w-xs sm:max-w-md leading-relaxed">
           Handcrafted portraits and original artwork that capture your most
           cherished moments. Every brushstroke tells a story — let yours be next.
         </motion.p>
 
         <motion.div initial={{opacity:0,y:22}} animate={{opacity:1,y:0}}
           transition={{delay:1.28,duration:0.9,ease:[0.16,1,0.3,1]}}
-          className="mt-10 flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+          className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full max-w-xs sm:max-w-none">
           <Link to="/commission"
-            className="inline-flex items-center justify-center px-9 py-3.5 rounded-full
+            className="w-full sm:w-auto inline-flex items-center justify-center px-7 sm:px-9 py-3.5 rounded-full
                        bg-charcoal dark:bg-[#F0EDE8] text-ivory dark:text-[#1A1814]
-                       text-xs uppercase tracking-[0.22em] font-medium
+                       text-xs uppercase tracking-[0.2em] sm:tracking-[0.22em] font-medium
                        transition-all duration-300
                        hover:bg-terracotta hover:text-ivory dark:hover:bg-terracotta dark:hover:text-ivory
                        hover:-translate-y-0.5 hover:shadow-lg hover:shadow-terracotta/20">
             Commission Your Artwork
           </Link>
           <Link to="/shop"
-            className="inline-flex items-center gap-2 justify-center px-9 py-3.5 rounded-full
-                       border-2 border-charcoal/18 dark:border-[#F0EDE8]/20
+            className="w-full sm:w-auto inline-flex items-center gap-2 justify-center px-7 sm:px-9 py-3.5 rounded-full
+                       border-2 border-charcoal/20 dark:border-[#F0EDE8]/20
                        text-charcoal dark:text-[#F0EDE8]
-                       text-xs uppercase tracking-[0.22em] font-medium
+                       text-xs uppercase tracking-[0.2em] sm:tracking-[0.22em] font-medium
                        transition-all duration-300
                        hover:border-terracotta/50 hover:text-terracotta">
             Explore Collection
@@ -440,11 +440,11 @@ export default function HeroSection() {
 
         <motion.div initial={{opacity:0,y:18}} animate={{opacity:1,y:0}}
           transition={{delay:1.55,duration:0.8}}
-          className="mt-16 flex items-center gap-10 sm:gap-16">
-          {[{value:'200+',label:'Artworks'},{value:'98%',label:'Happy Collectors'},{value:'5 ★',label:'Rating'}].map(({value,label})=>(
+          className="mt-10 sm:mt-16 flex items-center gap-8 sm:gap-16">
+          {[{value:'200+',label:'Artworks'},{value:'98%',label:'Collectors'},{value:'5 ★',label:'Rating'}].map(({value,label})=>(
             <div key={label} className="text-center">
-              <p className="text-2xl sm:text-3xl font-display text-charcoal dark:text-[#F0EDE8] leading-none">{value}</p>
-              <p className="mt-1.5 text-[10px] uppercase tracking-[0.24em] text-charcoal-muted dark:text-[#9A9590]">{label}</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-display text-charcoal dark:text-[#F0EDE8] leading-none">{value}</p>
+              <p className="mt-1 sm:mt-1.5 text-[9px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.24em] text-charcoal-muted dark:text-[#9A9590]">{label}</p>
             </div>
           ))}
         </motion.div>
