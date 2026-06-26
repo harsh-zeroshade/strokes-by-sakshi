@@ -7,4 +7,4 @@ cmds = [
 ]
 
 [start]
-cmd = "php artisan config:clear && php artisan route:clear && php artisan cache:clear && php artisan migrate --force && php -S 0.0.0.0:$PORT -t public"
+cmd = "php artisan config:clear && php artisan route:clear && php artisan cache:clear && php artisan migrate --force && php -c /app/php.ini -S 0.0.0.0:$PORT -t public"
