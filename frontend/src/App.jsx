@@ -40,12 +40,13 @@ import { AdminAnalyticsPage } from './pages/admin/AdminAnalytics';
 function AnimatedRoutes() {
   const location = useLocation();
   const isAdmin  = location.pathname.startsWith('/admin');
+  const isHome   = location.pathname === '/';
 
   return (
     <div className={isAdmin ? 'h-screen overflow-hidden' : 'min-h-screen flex flex-col bg-ivory dark:bg-[#1A1814]'}>
 
-      {/* Site chrome — hidden on all /admin/* routes */}
-      {!isAdmin && <Navbar />}
+      {/* Site chrome — hidden on admin and homepage (hero has its own nav) */}
+      {!isAdmin && !isHome && <Navbar />}
       {!isAdmin && <CartDrawer />}
 
       {/* Page content */}

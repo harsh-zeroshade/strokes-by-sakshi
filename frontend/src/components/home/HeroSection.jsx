@@ -1,468 +1,648 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'motion/react';
 import * as THREE from 'three';
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   Three.js art scene — mouse-tracking depth parallax
-   Receives its own dedicated DOM ref so it never conflicts with other layers.
-───────────────────────────────────────────────────────────────────────────── */
-function ArtScene({ containerRef }) {
+/* ══════════════════════════════════════════════════════════════════════════
+   COLLECTIONS CONFIG — adapted from Delassus PRODUCTS pattern
+   Each collection has: bg color, accent color, title, 3D art objects
+══════════════════════════════════════════════════════════════════════════ */
+const COLLECTIONS = [
+  {
+    name: 'Portraits',
+    bg: '#C7694F',          // terracotta
+    accent: '#E8A87C',
+    objects: [
+      { fn: 'makeCanvas',   x: -0.08, y: 0.20, z: 0,    s: 1.30, ry: 0,    bob: 1.0, bspd: 0.50, bph: 0    },
+      { fn: 'makePalette',  x: -0.50, y:-0.08, z: 0.18, s: 0.90, ry: 0.4,  bob: 0.9, bspd: 0.68, bph: 1.3  },
+      { fn: 'makeBrush',    x:  0.50, y:-0.05, z:-0.08, s: 1.00, ry:-0.3,  bob: 1.1, bspd: 0.58, bph: 0.7  },
+    ],
+  },
+  {
+    name: 'Landscapes',
+    bg: '#9CAF88',          // sage
+    accent: '#7A9A68',
+    objects: [
+      { fn: 'makeCanvas',   x: -0.08, y: 0.22, z: 0,    s: 1.35, ry: 0,    bob: 1.0, bspd: 0.50, bph: 0    },
+      { fn: 'makeInkDrop',  x: -0.52, y:-0.04, z: 0.15, s: 1.05, ry: 0.3,  bob: 0.9, bspd: 0.65, bph: 1.2  },
+      { fn: 'makeBrush',    x:  0.52, y:-0.06, z:-0.05, s: 1.10, ry:-0.3,  bob: 1.2, bspd: 0.55, bph: 0.5  },
+      { fn: 'makePalette',  x: -0.28, y:-0.36, z: 0.28, s: 0.55, ry: 0,    bob: 0.7, bspd: 0.90, bph: 2.1  },
+    ],
+  },
+  {
+    name: 'Abstract',
+    bg: '#4A3728',          // deep walnut
+    accent: '#C9A94E',
+    objects: [
+      { fn: 'makeInkDrop',  x: -0.08, y: 0.20, z: 0,    s: 1.30, ry: 0,    bob: 0.9, bspd: 0.50, bph: 0    },
+      { fn: 'makeCanvas',   x: -0.50, y:-0.05, z: 0.18, s: 0.80, ry: 0.6,  bob: 1.1, bspd: 0.70, bph: 1.0  },
+      { fn: 'makePalette',  x:  0.50, y:-0.04, z:-0.10, s: 0.95, ry:-0.5,  bob: 0.8, bspd: 0.60, bph: 1.8  },
+    ],
+  },
+  {
+    name: 'Commissions',
+    bg: '#2C2C2C',          // charcoal
+    accent: '#C7694F',
+    objects: [
+      { fn: 'makeBrush',    x: -0.08, y: 0.20, z: 0,    s: 1.30, ry: 0,    bob: 1.0, bspd: 0.50, bph: 0    },
+      { fn: 'makeCanvas',   x: -0.50, y:-0.05, z: 0.18, s: 0.90, ry: 0.4,  bob: 0.85,bspd: 0.70, bph: 1.4  },
+      { fn: 'makeInkDrop',  x:  0.50, y:-0.03, z:-0.10, s: 0.80, ry:-0.3,  bob: 1.1, bspd: 0.60, bph: 0.6  },
+    ],
+  },
+];
+
+/* ══════════════════════════════════════════════════════════════════════════
+   3D OBJECT MAKERS — art-themed low-poly geometry
+══════════════════════════════════════════════════════════════════════════ */
+function flatMat(color, opts = {}) {
+  return new THREE.MeshLambertMaterial({ color, flatShading: true, ...opts });
+}
+function jitColor(r, g, b, amount = 0.06) {
+  const j = () => (Math.random() - 0.5) * amount;
+  return [r + j(), g + j(), b + j()];
+}
+
+/* Canvas frame with a painted surface */
+function makeCanvas() {
+  const g = new THREE.Group();
+  // Frame
+  const frameGeo = new THREE.BoxGeometry(1.1, 1.4, 0.06);
+  const frameColors = []; const fp = frameGeo.attributes.position;
+  for (let i = 0; i < fp.count / 3; i++) {
+    const c = jitColor(0.36, 0.22, 0.14, 0.04);
+    for (let j = 0; j < 3; j++) frameColors.push(...c);
+  }
+  frameGeo.setAttribute('color', new THREE.Float32BufferAttribute(frameColors, 3));
+  g.add(new THREE.Mesh(frameGeo, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true })));
+  // Canvas surface
+  const surfGeo = new THREE.PlaneGeometry(0.92, 1.22, 4, 5);
+  const surfColors = []; const sp = surfGeo.attributes.position;
+  const palette = [[0.97,0.93,0.88],[0.78,0.38,0.22],[0.79,0.67,0.30],[0.61,0.69,0.53]];
+  for (let i = 0; i < sp.count / 3; i++) {
+    const c = palette[i % palette.length];
+    for (let j = 0; j < 3; j++) surfColors.push(...jitColor(c[0],c[1],c[2],0.06));
+  }
+  surfGeo.setAttribute('color', new THREE.Float32BufferAttribute(surfColors, 3));
+  const surf = new THREE.Mesh(surfGeo, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true }));
+  surf.position.z = 0.05;
+  g.add(surf);
+  return g;
+}
+
+/* Paint palette */
+function makePalette() {
+  const g = new THREE.Group();
+  const geo = new THREE.CylinderGeometry(0.52, 0.52, 0.06, 7);
+  // flatten one side for thumb hole
+  const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), z = pos.getZ(i);
+    if (x < -0.28) pos.setX(i, x * 0.55);
+    if (x < -0.28) pos.setZ(i, z * 0.80);
+  }
+  geo.computeVertexNormals();
+  const colors = [];
+  for (let i = 0; i < pos.count / 3; i++) {
+    const c = jitColor(0.96, 0.94, 0.88, 0.04);
+    for (let j = 0; j < 3; j++) colors.push(...c);
+  }
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  g.add(new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true })));
+  // Paint dabs
+  const dabs = [
+    [0.22, 0.04, 0.12, 0.78, 0.38, 0.22],
+    [-0.10, 0.04, 0.32, 0.79, 0.67, 0.30],
+    [0.10, 0.04,-0.28, 0.61, 0.69, 0.53],
+    [0.30, 0.04,-0.10, 0.79, 0.52, 0.28],
+    [-0.28, 0.04, 0.05, 0.38, 0.30, 0.62],
+  ];
+  dabs.forEach(([dx, dy, dz, r, gr, b]) => {
+    const dg = new THREE.SphereGeometry(0.09, 4, 4);
+    const dc = []; const dp = dg.attributes.position;
+    for (let i = 0; i < dp.count / 3; i++) {
+      for (let j = 0; j < 3; j++) dc.push(...jitColor(r, gr, b, 0.05));
+    }
+    dg.setAttribute('color', new THREE.Float32BufferAttribute(dc, 3));
+    const dm = new THREE.Mesh(dg, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true }));
+    dm.position.set(dx, dy, dz); dm.scale.y = 0.35;
+    g.add(dm);
+  });
+  g.rotation.x = -0.3;
+  return g;
+}
+
+/* Paintbrush */
+function makeBrush() {
+  const g = new THREE.Group();
+  // Handle
+  const hGeo = new THREE.CylinderGeometry(0.045, 0.055, 1.8, 6);
+  const hColors = []; const hp = hGeo.attributes.position;
+  for (let i = 0; i < hp.count / 3; i++) {
+    for (let j = 0; j < 3; j++) hColors.push(...jitColor(0.60, 0.36, 0.15, 0.05));
+  }
+  hGeo.setAttribute('color', new THREE.Float32BufferAttribute(hColors, 3));
+  g.add(new THREE.Mesh(hGeo, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true })));
+  // Ferrule
+  const ferGeo = new THREE.CylinderGeometry(0.058, 0.058, 0.18, 6);
+  g.add(new THREE.Mesh(ferGeo, flatMat(0xb8b8b8)));
+  const fer = g.children[g.children.length - 1]; fer.position.y = -0.96;
+  // Bristle
+  const brGeo = new THREE.ConeGeometry(0.055, 0.45, 6);
+  const brColors = []; const brp = brGeo.attributes.position;
+  for (let i = 0; i < brp.count / 3; i++) {
+    for (let j = 0; j < 3; j++) brColors.push(...jitColor(0.78, 0.38, 0.22, 0.06));
+  }
+  brGeo.setAttribute('color', new THREE.Float32BufferAttribute(brColors, 3));
+  const br = new THREE.Mesh(brGeo, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true }));
+  br.position.y = -1.30; br.rotation.x = Math.PI;
+  g.add(br);
+  g.rotation.z = 0.35;
+  return g;
+}
+
+/* Ink drop / splash */
+function makeInkDrop() {
+  const g = new THREE.Group();
+  // Main drop (icosahedron)
+  const dGeo = new THREE.IcosahedronGeometry(0.52, 1);
+  const pos = dGeo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const y = pos.getY(i);
+    pos.setY(i, y * (y > 0 ? 1.25 : 0.75)); // teardrop shape
+  }
+  dGeo.computeVertexNormals();
+  const dColors = [];
+  const inkPalette = [[0.17,0.10,0.06],[0.14,0.08,0.05],[0.20,0.12,0.07]];
+  for (let i = 0; i < pos.count / 3; i++) {
+    const c = inkPalette[i % inkPalette.length];
+    for (let j = 0; j < 3; j++) dColors.push(...jitColor(c[0],c[1],c[2],0.03));
+  }
+  dGeo.setAttribute('color', new THREE.Float32BufferAttribute(dColors, 3));
+  g.add(new THREE.Mesh(dGeo, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true })));
+  // Splash ring
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2;
+    const sGeo = new THREE.SphereGeometry(0.06 + Math.random() * 0.04, 4, 4);
+    const sm = new THREE.Mesh(sGeo, flatMat(0x2a1a0f));
+    const r = 0.62 + Math.random() * 0.12;
+    sm.position.set(Math.cos(a) * r, -0.28 + Math.random() * 0.1, Math.sin(a) * r);
+    g.add(sm);
+  }
+  return g;
+}
+
+const MAKERS = { makeCanvas, makePalette, makeBrush, makeInkDrop };
+
+/* ══════════════════════════════════════════════════════════════════════════
+   HERO SECTION
+══════════════════════════════════════════════════════════════════════════ */
+export default function HeroSection() {
+  const canvasRef   = useRef(null);
+  const sectionRef  = useRef(null);
+  const [activeIdx, setActiveIdx]   = useState(0);
+  const [title,     setTitle]       = useState(COLLECTIONS[0].name);
+  const [titleState, setTitleState] = useState('in'); // 'in' | 'out'
+  const [menuOpen,  setMenuOpen]    = useState(false);
+
+  /* Three.js state stored in refs so they survive re-renders */
+  const threeRef = useRef({
+    renderer: null, scene: null, camera: null,
+    groups: [], outGroups: [],
+    transitioning: false, transStart: 0,
+    mouseX: 0, mouseY: 0, tMX: 0, tMY: 0,
+    currentIdx: 0, rafId: null,
+  });
+
+  /* ── INIT THREE.JS ── */
   useEffect(() => {
-    const mount = containerRef.current;
-    if (!mount) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const t = threeRef.current;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setClearColor(0x000000, 0);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    // Size the canvas to fill the container
-    const canvas = renderer.domElement;
-    canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
-    mount.appendChild(canvas);
+    t.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    t.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    t.renderer.setClearColor(0x000000, 0);
 
-    const scene  = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 200);
-    camera.position.z = 18;
+    t.scene = new THREE.Scene();
+    t.camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    t.camera.position.set(0, 0, 5);
+
+    // Lights
+    t.scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+    const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+    dir.position.set(3, 5, 4); t.scene.add(dir);
+    const dir2 = new THREE.DirectionalLight(0xffffff, 0.25);
+    dir2.position.set(-4, -2, 2); t.scene.add(dir2);
 
     const resize = () => {
-      const w = mount.clientWidth || window.innerWidth;
-      const h = mount.clientHeight || window.innerHeight;
-      renderer.setSize(w, h, false);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      t.renderer.setSize(w, h, false);
+      t.camera.aspect = w / h;
+      t.camera.updateProjectionMatrix();
     };
     resize();
-
-    const C = {
-      terra : new THREE.Color('#c7694f'),
-      gold  : new THREE.Color('#c9a94e'),
-      sage  : new THREE.Color('#9caf88'),
-      coal  : new THREE.Color('#3a3a3a'),
-      blush : new THREE.Color('#e8c4c4'),
-      walnut: new THREE.Color('#5c3a1e'),
-    };
-
-    const layerSpeeds = [0.06, 0.14, 0.25, 0.40, 0.60];
-    const layerZ      = [-16, -10, -5, -2, 0];
-    const layers = layerSpeeds.map((_, i) => {
-      const g = new THREE.Group();
-      g.position.z = layerZ[i];
-      scene.add(g);
-      return g;
-    });
-
-    const mixers = [];
-    const play = (obj, clip) => {
-      const mx = new THREE.AnimationMixer(obj);
-      mx.clipAction(clip).setLoop(THREE.LoopRepeat, Infinity).play();
-      mixers.push(mx);
-    };
-    const bob = (name, ampY, dur, sy = 0) =>
-      new THREE.AnimationClip(name, dur, [
-        new THREE.VectorKeyframeTrack('.position',
-          [0, dur * 0.5, dur], [0, sy, 0, 0, sy + ampY, 0, 0, sy, 0])
-      ]);
-    const mm = (col, op = 1) =>
-      new THREE.MeshBasicMaterial({ color: col, transparent: op < 1, opacity: op });
-
-    // L0 — faint background planes
-    [[9,12,-14,3,C.terra,0.06],[14,9,12,-4,C.gold,0.05],[7,10,0,7,C.sage,0.07]]
-      .forEach(([w,h,x,y,col,op],i) => {
-        const m = new THREE.Mesh(new THREE.PlaneGeometry(w,h), mm(col,op));
-        m.position.set(x,y,0); layers[0].add(m); play(m, bob(`l0${i}`,0.8,9+i*2,y));
-      });
-
-    // L1 — frame outlines
-    [[5,7,-10,2,C.terra,0.18,0.12],[8,5,9,-3,C.gold,0.14,-0.08],
-     [4,6,2,6,C.sage,0.16,0.05],[6,4,-7,-6,C.coal,0.12,-0.15]]
-      .forEach(([w,h,x,y,col,op,rz],i) => {
-        const e = new THREE.LineSegments(
-          new THREE.EdgesGeometry(new THREE.PlaneGeometry(w,h)),
-          new THREE.LineBasicMaterial({ color:col, transparent:true, opacity:op })
-        );
-        e.position.set(x,y,0); e.rotation.z = rz;
-        layers[1].add(e); play(e, bob(`l1${i}`,1,7+i*1.5,y));
-      });
-
-    // L2 — brushstrokes + circles
-    [[12,0.22,-4,2.5,C.terra,0.14,0.10],[9,0.16,5,-2,C.gold,0.12,-0.06],[7,0.13,-6,-5,C.sage,0.10,0.04]]
-      .forEach(([w,h,x,y,col,op,rz],i) => {
-        const m = new THREE.Mesh(new THREE.PlaneGeometry(w,h), mm(col,op));
-        m.position.set(x,y,0); m.rotation.z = rz;
-        layers[2].add(m); play(m, bob(`l2s${i}`,0.5,6+i,y));
-      });
-    [[0.8,-8,4,C.blush,0.35],[1.0,7,3,C.gold,0.28],[0.6,3,-4,C.terra,0.32],[1.2,-5,-2,C.sage,0.22]]
-      .forEach(([r,x,y,col,op],i) => {
-        const m = new THREE.Mesh(new THREE.CircleGeometry(r,28), mm(col,op));
-        m.position.set(x,y,0); layers[2].add(m); play(m, bob(`l2c${i}`,0.7,5+i*0.8,y));
-      });
-
-    // L3 — brush + tubes
-    const brush = new THREE.Group(); brush.position.set(3,-1,0);
-    brush.add(new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.045,2.8,10), mm(C.walnut,0.75)));
-    const fer = new THREE.Mesh(new THREE.CylinderGeometry(0.072,0.072,0.22,10), mm(new THREE.Color('#b8b8b8'),0.7));
-    fer.position.y = -1.55; brush.add(fer);
-    const tip = new THREE.Mesh(new THREE.ConeGeometry(0.065,0.5,10), mm(C.terra,0.78));
-    tip.position.y = -2.02; brush.add(tip);
-    layers[3].add(brush);
-    const qv = (ex,ey,ez) => { const q=new THREE.Quaternion(); q.setFromEuler(new THREE.Euler(ex,ey,ez)); return[q.x,q.y,q.z,q.w]; };
-    play(brush, new THREE.AnimationClip('bs',7,[
-      new THREE.QuaternionKeyframeTrack('.quaternion',[0,1.5,3,4.5,7],[
-        ...qv(0,0,-0.5),...qv(0.2,0.1,0.2),...qv(-0.1,-0.1,0.5),...qv(0.1,0,-0.1),...qv(0,0,-0.5)]),
-      new THREE.VectorKeyframeTrack('.position',[0,1,2,3,4,5,7],[3,-1,0,4,0,0,2,1,0,0,0,0,1,-2,0,3,-1,0,3,-1,0]),
-    ]));
-    [[C.terra,-7,3,4.5],[C.gold,8,-4,5.8],[C.sage,-3,-3,3.8]].forEach(([col,x,y,dur],i) => {
-      const g = new THREE.Group(); g.position.set(x,y,0);
-      g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.2,1.3,12), mm(col,0.55)));
-      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.2,0.22,12), mm(col,0.45));
-      cap.position.y = 0.76; g.add(cap); layers[3].add(g);
-      const n=5, times=Array.from({length:n},(_,k)=>k/(n-1)*dur);
-      const vals=times.map((_,k)=>qv(0,0,k/(n-1)*Math.PI*2)).flat();
-      play(g, new THREE.AnimationClip(`t${i}`,dur,[new THREE.QuaternionKeyframeTrack('.quaternion',times,vals)]));
-    });
-
-    // L4 — ink splatter particles
-    const sc=document.createElement('canvas'); sc.width=sc.height=64;
-    const sx=sc.getContext('2d'), sg=sx.createRadialGradient(32,32,0,32,32,32);
-    sg.addColorStop(0,'rgba(255,255,255,1)'); sg.addColorStop(0.45,'rgba(255,255,255,0.5)'); sg.addColorStop(1,'rgba(255,255,255,0)');
-    sx.fillStyle=sg; sx.fillRect(0,0,64,64);
-    const spriteTex=new THREE.CanvasTexture(sc);
-    const PAL=[C.terra,C.gold,C.sage,C.coal,C.blush];
-    const N=280, pPos=new Float32Array(N*3), pCol=new Float32Array(N*3), drifts=new Float32Array(N);
-    for(let i=0;i<N;i++){
-      pPos[i*3]=(Math.random()-0.5)*42; pPos[i*3+1]=(Math.random()-0.5)*28; pPos[i*3+2]=(Math.random()-0.5)*4;
-      const c=PAL[Math.floor(Math.random()*PAL.length)];
-      pCol[i*3]=c.r; pCol[i*3+1]=c.g; pCol[i*3+2]=c.b;
-      drifts[i]=(Math.random()-0.5)*0.006;
-    }
-    const pGeo=new THREE.BufferGeometry();
-    pGeo.setAttribute('position',new THREE.BufferAttribute(pPos,3));
-    pGeo.setAttribute('color',new THREE.BufferAttribute(pCol,3));
-    const pMat=new THREE.PointsMaterial({size:0.38,map:spriteTex,vertexColors:true,transparent:true,opacity:0.75,blending:THREE.NormalBlending,depthWrite:false,sizeAttenuation:true});
-    layers[4].add(new THREE.Points(pGeo,pMat));
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
 
     // Mouse parallax
-    let tX=0,tY=0,cX=0,cY=0;
-    const onMove  = e => { tX=(e.clientX/window.innerWidth-0.5)*2; tY=(e.clientY/window.innerHeight-0.5)*2; };
-    const onTouch = e => { if(!e.touches[0])return; tX=(e.touches[0].clientX/window.innerWidth-0.5)*2; tY=(e.touches[0].clientY/window.innerHeight-0.5)*2; };
+    const onMove = e => {
+      t.tMX = (e.clientX / window.innerWidth - 0.5) * 2;
+      t.tMY = -(e.clientY / window.innerHeight - 0.5) * 2;
+    };
+    const onTouch = e => {
+      if (!e.touches[0]) return;
+      t.tMX = (e.touches[0].clientX / window.innerWidth - 0.5) * 2;
+      t.tMY = -(e.touches[0].clientY / window.innerHeight - 0.5) * 2;
+    };
     window.addEventListener('mousemove', onMove);
-    window.addEventListener('touchmove', onTouch, { passive:true });
+    window.addEventListener('touchmove', onTouch, { passive: true });
 
-    let raf; const clock = new THREE.Clock();
+    // Build initial group
+    buildGroup(0);
+
+    // Animate loop
+    const clock = new THREE.Clock();
     const tick = () => {
-      raf = requestAnimationFrame(tick);
-      const dt=clock.getDelta(), el=clock.getElapsedTime();
-      cX+=(tX-cX)*0.055; cY+=(tY-cY)*0.055;
-      layers.forEach((layer,i) => {
-        const s=layerSpeeds[i];
-        layer.position.x+=(cX*2.8*s-layer.position.x)*0.08;
-        layer.position.y+=(-cY*2.8*s*0.65-layer.position.y)*0.08;
-      });
-      for(let i=0;i<N;i++){
-        pPos[i*3+1]+=drifts[i];
-        if(pPos[i*3+1]>14)  pPos[i*3+1]=-14;
-        if(pPos[i*3+1]<-14) pPos[i*3+1]=14;
+      t.rafId = requestAnimationFrame(tick);
+      const dt = clock.getDelta();
+      const el = clock.getElapsedTime();
+
+      // Smooth mouse
+      t.mouseX += (t.tMX - t.mouseX) * 0.05;
+      t.mouseY += (t.tMY - t.mouseY) * 0.05;
+
+      // Transition easing
+      let tProg = 1;
+      if (t.transitioning) {
+        const raw = Math.min(1, (performance.now() - t.transStart) / 900);
+        tProg = raw < 0.5 ? 4*raw*raw*raw : (raw-1)*(2*raw-2)*(2*raw-2)+1;
+        if (tProg >= 1) {
+          t.transitioning = false;
+          t.outGroups.forEach(gd => t.scene.remove(gd.group));
+          t.outGroups = [];
+        }
       }
-      pGeo.attributes.position.needsUpdate=true;
-      pMat.opacity=0.62+0.13*Math.sin(el*0.45);
-      camera.position.z=18+Math.sin(el*0.25)*0.5;
-      mixers.forEach(m=>m.update(dt));
-      renderer.render(scene,camera);
+
+      // Fade out old groups
+      t.outGroups.forEach(gd => {
+        gd.fruits.forEach(f => { f.mesh.position.y = f.baseY + tProg * 1.8; });
+        gd.group.traverse(o => { if (o.material) { o.material.transparent = true; o.material.opacity = 1 - tProg; } });
+      });
+
+      // Animate active groups
+      t.groups.forEach(gd => {
+        gd.fruits.forEach(f => {
+          const bobY = Math.sin(el * f.bspd + f.bph) * f.bob * 0.12;
+          f.mesh.position.y = f.baseY + bobY;
+          f.mesh.rotation.y += dt * 0.18;
+        });
+        gd.group.rotation.x = t.mouseY * 0.04;
+        gd.group.rotation.y = t.mouseX * 0.06;
+        if (t.transitioning) {
+          gd.group.traverse(o => { if (o.material) { o.material.transparent = true; o.material.opacity = tProg; } });
+        } else {
+          gd.group.traverse(o => { if (o.material) { o.material.transparent = false; o.material.opacity = 1; } });
+        }
+      });
+
+      t.renderer.render(t.scene, t.camera);
     };
     tick();
 
-    const ro = new ResizeObserver(resize); ro.observe(mount);
     return () => {
-      cancelAnimationFrame(raf);
+      cancelAnimationFrame(t.rafId);
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('touchmove', onTouch);
       ro.disconnect();
-      spriteTex.dispose(); pGeo.dispose(); pMat.dispose(); renderer.dispose();
-      if (mount.contains(canvas)) mount.removeChild(canvas);
+      t.renderer.dispose();
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line
 
-  return null;
-}
+  /* ── BUILD GROUP ── */
+  const buildGroup = useCallback((idx) => {
+    const t = threeRef.current;
+    if (!t.scene) return;
+    const col = COLLECTIONS[idx];
+    const group = new THREE.Group();
+    const fruits = [];
+    col.objects.forEach(obj => {
+      const maker = MAKERS[obj.fn];
+      if (!maker) return;
+      const mesh = maker();
+      const W = (t.camera.aspect || 1.6) * 2;
+      mesh.position.set(obj.x * W, obj.y * 2, obj.z);
+      mesh.scale.setScalar(obj.s);
+      mesh.rotation.y = obj.ry;
+      group.add(mesh);
+      fruits.push({ mesh, bob: obj.bob, bspd: obj.bspd, bph: obj.bph, baseY: obj.y * 2 });
+    });
+    t.scene.add(group);
+    t.groups = [{ group, fruits }];
+    return { group, fruits };
+  }, []);
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   Scroll parallax — the ONLY reliable cross-browser technique that actually
-   produces the Delassus effect without overflow-hidden clipping issues:
+  /* ── SWITCH COLLECTION ── */
+  const switchTo = useCallback((idx) => {
+    const t = threeRef.current;
+    if (idx === t.currentIdx) return;
 
-   The background layer is position:fixed, so it sits behind everything in
-   the viewport. We then use clip-path (or a CSS mask) based on the hero's
-   bounding rect so it only shows through the hero section.
+    // Title swap animation
+    setTitleState('out');
+    setTimeout(() => {
+      setTitle(COLLECTIONS[idx].name);
+      setTitleState('in');
+    }, 270);
 
-   Actually the simplest correct approach: position the bg element with
-   position:absolute inside the hero (which has overflow:hidden), give the
-   bg a height of 130% and let translateY go from 0 → -30% as the hero
-   scrolls from 0 → hero-height. This means the bg moves 30% while the
-   section moves 100% → genuine parallax. The key is we must NOT use
-   overflow:hidden on the section itself, but instead clip with a wrapper.
+    // 3D transition
+    t.outGroups = [...t.groups];
+    t.groups = [];
+    const nd = buildGroup(idx);
+    // Start new group invisible, shifted below
+    nd.fruits.forEach(f => { f.mesh.position.y = f.baseY - 1.4; });
+    nd.group.traverse(o => { if (o.material) { o.material.transparent = true; o.material.opacity = 0; } });
+    t.groups = [nd];
+    t.transitioning = true;
+    t.transStart = performance.now();
+    t.currentIdx = idx;
+    setActiveIdx(idx);
+  }, [buildGroup]);
 
-   Implementation below uses IntersectionObserver + rAF scroll listener,
-   calculates how far through the hero we've scrolled (0→1), and maps that
-   to a translateY range, producing the exact Delassus parallax feel.
-───────────────────────────────────────────────────────────────────────────── */
-function ParallaxBackground({ sectionRef }) {
-  const bgRef = useRef(null);
+  /* ── AUTO CYCLE ── */
+  const autoCycleRef = useRef(null);
+  const resetCycle = useCallback(() => {
+    if (autoCycleRef.current) clearInterval(autoCycleRef.current);
+    autoCycleRef.current = setInterval(() => {
+      const t = threeRef.current;
+      switchTo((t.currentIdx + 1) % COLLECTIONS.length);
+    }, 4500);
+  }, [switchTo]);
 
   useEffect(() => {
-    const section = sectionRef.current;
-    const bg      = bgRef.current;
-    if (!section || !bg) return;
+    resetCycle();
+    return () => clearInterval(autoCycleRef.current);
+  }, [resetCycle]);
 
-    // Respect reduced-motion preference
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-    let rafId = null;
-
-    const update = () => {
-      rafId = null;
-      const rect   = section.getBoundingClientRect();
-      const vh     = window.innerHeight;
-      // progress: 0 when section top hits viewport top, 1 when section bottom leaves viewport
-      const total  = rect.height + vh;
-      const gone   = vh - rect.top;          // how many px of the section have "passed"
-      const t      = Math.max(0, Math.min(1, gone / total));
-      // Map t (0→1) to translateY (0 → -25%)  — bg moves upward SLOWER than page
-      const shift  = t * -25;
-      bg.style.transform = `translateY(${shift}%)`;
+  /* ── KEYBOARD ── */
+  useEffect(() => {
+    const onKey = e => {
+      const t = threeRef.current;
+      if (e.key === 'Escape') setMenuOpen(false);
+      if (e.key === 'ArrowRight') { switchTo((t.currentIdx + 1) % COLLECTIONS.length); resetCycle(); }
+      if (e.key === 'ArrowLeft')  { switchTo((t.currentIdx + COLLECTIONS.length - 1) % COLLECTIONS.length); resetCycle(); }
     };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [switchTo, resetCycle]);
 
-    const onScroll = () => {
-      if (!rafId) rafId = requestAnimationFrame(update);
-    };
-
-    update(); // initial position
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      if (rafId) cancelAnimationFrame(rafId);
-    };
-  }, [sectionRef]);
+  const col = COLLECTIONS[activeIdx];
 
   return (
-    /* Wrapper that clips the parallax bg to the hero bounds */
-    <div
-      aria-hidden="true"
-      className="absolute inset-0 overflow-hidden"
-      style={{ zIndex: 0 }}
-    >
-      {/* The actual bg — taller than 100% so there's room to shift */}
-      <div
-        ref={bgRef}
-        className="absolute inset-x-0 will-change-transform"
-        style={{ top: 0, height: '130%' }}
+    <>
+      {/* ══════════════════════════════════════════════════════════
+          HERO — full viewport, bg color transitions per collection
+      ══════════════════════════════════════════════════════════ */}
+      <section
+        ref={sectionRef}
+        className="relative overflow-hidden"
+        style={{
+          position: 'fixed', inset: 0, zIndex: 1,
+          backgroundColor: col.bg,
+          transition: 'background-color 0.85s cubic-bezier(0.4,0,0.2,1)',
+        }}
       >
-        {/* Light-mode warm canvas background */}
+        {/* Three.js canvas */}
+        <canvas
+          ref={canvasRef}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+        />
+
+        {/* ── NAVBAR ── */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100,
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+          padding: '28px 32px 0',
+        }}>
+          {/* Logo */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Link to="/" style={{ textDecoration: 'none' }}>
+              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 400, color: 'white', letterSpacing: '-0.3px', lineHeight: 1 }}>
+                Strokes
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                {/* 3×3 dot grid — exact Delassus pattern */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 4px)', gap: '2.5px', marginTop: 1 }}>
+                  {[...Array(9)].map((_, i) => (
+                    <div key={i} style={{ width: 4, height: 4, background: 'white', borderRadius: '50%' }} />
+                  ))}
+                </div>
+                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, fontWeight: 300, color: 'white', letterSpacing: '0.5px', lineHeight: 1 }}>
+                  by Sakshi
+                </span>
+              </div>
+              {/* Badge */}
+              <div style={{ marginTop: 8, border: '1px solid rgba(255,255,255,0.5)', borderRadius: 2, padding: '3px 8px', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <svg width="11" height="11" viewBox="0 0 20 20" fill="white" opacity="0.8"><polygon points="10,2 18,7 18,13 10,18 2,13 2,7"/></svg>
+                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 9, color: 'rgba(255,255,255,0.8)', letterSpacing: '1.5px', fontStyle: 'italic' }}>India</span>
+              </div>
+            </Link>
+          </div>
+
+          {/* Hamburger */}
+          <button
+            onClick={() => setMenuOpen(true)}
+            aria-label="Open menu"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, marginTop: 2, display: 'flex', flexDirection: 'column', gap: 5 }}
+          >
+            {[0,1,2].map(i => (
+              <span key={i} style={{ display: 'block', width: 26, height: 1, background: 'white' }} />
+            ))}
+          </button>
+        </div>
+
+        {/* ── BIG TITLE ── */}
         <div
-          className="w-full h-full dark:hidden"
           style={{
-            background: [
-              'radial-gradient(ellipse 72% 56% at 14% 28%,  rgba(199,105,79,0.13) 0%, transparent 65%)',
-              'radial-gradient(ellipse 62% 52% at 86% 68%,  rgba(201,169,78,0.11) 0%, transparent 62%)',
-              'radial-gradient(ellipse 80% 60% at 50% 50%,  rgba(156,175,136,0.07) 0%, transparent 70%)',
-              'radial-gradient(ellipse 44% 38% at 76% 14%,  rgba(232,196,196,0.15) 0%, transparent 55%)',
-              'radial-gradient(ellipse 52% 42% at 18% 82%,  rgba(199,105,79,0.09) 0%, transparent 60%)',
-              '#FAF7F2',
-            ].join(','),
+            position: 'absolute',
+            top: '42%', left: '42%',
+            transform: 'translate(-40%, -52%)',
+            fontFamily: "'Playfair Display', serif",
+            fontSize: 'clamp(72px, 12vw, 160px)',
+            fontWeight: 300,
+            color: 'white',
+            letterSpacing: '-2px',
+            lineHeight: 1,
+            pointerEvents: 'none',
+            zIndex: 20,
+            whiteSpace: 'nowrap',
+            opacity: titleState === 'out' ? 0 : 1,
+            transform: titleState === 'out'
+              ? 'translate(-40%, -52%) translateY(14px)'
+              : 'translate(-40%, -52%) translateY(0px)',
+            transition: titleState === 'out'
+              ? 'opacity 0.25s ease, transform 0.25s ease'
+              : 'opacity 0.45s ease, transform 0.45s cubic-bezier(0.22,1,0.36,1)',
           }}
-        />
-        {/* Dark-mode */}
-        <div className="hidden dark:block w-full h-full" style={{ background: '#1A1814' }} />
-      </div>
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   Hero Section
-───────────────────────────────────────────────────────────────────────────── */
-const fadeUp = (delay = 0, dur = 1) => ({
-  initial:    { opacity: 0, y: 32 },
-  animate:    { opacity: 1, y: 0  },
-  transition: { delay, duration: dur, ease: [0.16, 1, 0.3, 1] },
-});
-
-export default function HeroSection() {
-  const sectionRef = useRef(null);  // shared ref for the <section>
-  const sceneRef   = useRef(null);  // dedicated ref for Three.js canvas mount
-
-  return (
-    <section
-      ref={sectionRef}
-      className="relative w-full bg-[#FAF7F2] dark:bg-[#1A1814]"
-      style={{ minHeight: '100svh' }}
-    >
-      {/* ── 1. Parallax warm background ─────────────────────────────────────
-           ParallaxBackground clips its child to the hero with overflow:hidden,
-           so translateY never bleeds outside the section.
-      ──────────────────────────────────────────────────────────────────────── */}
-      <ParallaxBackground sectionRef={sectionRef} />
-
-      {/* ── 2. Three.js mouse-parallax art scene ──────────────────────────── */}
-      <div
-        ref={sceneRef}
-        aria-hidden="true"
-        className="absolute inset-0 w-full h-full"
-        style={{ zIndex: 1 }}
-      >
-        <ArtScene containerRef={sceneRef} />
-      </div>
-
-      {/* ── 3. Radial vignette — fades scene edges into bg ──────────────────
-           Darker toward edges so the text centre reads clearly.
-      ──────────────────────────────────────────────────────────────────────── */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 pointer-events-none dark:hidden"
-        style={{
-          zIndex: 2,
-          background: 'radial-gradient(ellipse 78% 62% at 50% 44%, transparent 22%, rgba(250,247,242,0.40) 52%, rgba(250,247,242,0.85) 78%, #FAF7F2 100%)',
-        }}
-      />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 pointer-events-none hidden dark:block"
-        style={{
-          zIndex: 2,
-          background: 'radial-gradient(ellipse 78% 62% at 50% 44%, transparent 22%, rgba(26,24,20,0.45) 52%, rgba(26,24,20,0.90) 78%, #1A1814 100%)',
-        }}
-      />
-
-      {/* ── 4. Bottom gradient — blends into the next section ─────────────── */}
-      <div aria-hidden="true" className="absolute bottom-0 inset-x-0 pointer-events-none dark:hidden"
-           style={{ zIndex: 3, height: 160, background: 'linear-gradient(to bottom, transparent, #FAF7F2)' }} />
-      <div aria-hidden="true" className="absolute bottom-0 inset-x-0 pointer-events-none hidden dark:block"
-           style={{ zIndex: 3, height: 160, background: 'linear-gradient(to bottom, transparent, #1A1814)' }} />
-
-      {/* ── 5. Hero content ──────────────────────────────────────────────────── */}
-      <div
-        className="relative flex flex-col items-center justify-center text-center min-h-[100svh] px-5 sm:px-8"
-        style={{
-          zIndex: 4,
-          paddingTop:    'clamp(100px, 16vw, 140px)',
-          paddingBottom: 'clamp(90px,  14vw, 120px)',
-        }}
-      >
-        {/* Eyebrow */}
-        <motion.p {...fadeUp(0.2, 0.9)}
-          className="text-[10px] sm:text-[11px] uppercase tracking-[0.35em] text-charcoal-muted dark:text-[#9A9590] font-medium mb-5 sm:mb-7">
-          Where Emotions Find Their Canvas
-        </motion.p>
-
-        {/* Headline */}
-        <motion.h1
-          initial="hidden" animate="visible"
-          variants={{ hidden:{}, visible:{ transition:{ staggerChildren:0.09, delayChildren:0.32 }}}}
-          className="font-display text-charcoal dark:text-[#F0EDE8] leading-[1.04] tracking-tight select-none"
-          style={{ fontSize: 'clamp(3rem, 9.5vw, 96px)' }}
         >
-          <span className="block">
-            {['Art','That'].map(w => (
-              <motion.span key={w}
-                variants={{ hidden:{ opacity:0, y:48 }, visible:{ opacity:1, y:0, transition:{ duration:1.05, ease:[0.16,1,0.3,1] }}}}
-                className="inline-block mr-[0.2em] last:mr-0">{w}
-              </motion.span>
-            ))}
-          </span>
-          <span className="block mt-0.5 sm:mt-1">
-            {[{ t:'Speaks', i:true, a:true },{ t:'to' },{ t:'You' }].map(({t,i,a}) => (
-              <motion.span key={t}
-                variants={{ hidden:{ opacity:0, y:48 }, visible:{ opacity:1, y:0, transition:{ duration:1.05, ease:[0.16,1,0.3,1] }}}}
-                className={`inline-block mr-[0.2em] last:mr-0${i?' italic':''}${a?' text-terracotta dark:text-[#D4826B]':''}`}>{t}
-              </motion.span>
-            ))}
-          </span>
-        </motion.h1>
+          {title}
+        </div>
 
-        {/* Divider */}
-        <motion.div
-          initial={{ scaleX:0 }} animate={{ scaleX:1 }}
-          transition={{ delay:1.05, duration:1.2, ease:[0.16,1,0.3,1] }}
-          className="mt-7 sm:mt-8 h-px w-16 sm:w-20 origin-center"
-          style={{ background: 'linear-gradient(90deg, transparent, #c7694f, transparent)' }}
-        />
-
-        {/* Body copy */}
-        <motion.p {...fadeUp(1.15, 0.95)}
-          className="mt-5 sm:mt-7 text-sm sm:text-base lg:text-[1.05rem] text-charcoal-muted dark:text-[#9A9590] max-w-[17rem] sm:max-w-[26rem] leading-relaxed">
-          Handcrafted portraits and original artwork that capture your most
-          cherished moments. Every brushstroke tells a story — let yours be next.
-        </motion.p>
-
-        {/* CTAs */}
-        <motion.div
-          initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}
-          transition={{ delay:1.32, duration:0.9, ease:[0.16,1,0.3,1] }}
-          className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-[17rem] sm:max-w-none"
+        {/* ── COLLECTION TABS — bottom center ── */}
+        <div
+          onClick={resetCycle}
+          style={{
+            position: 'absolute', bottom: 56, left: 0, right: 0,
+            display: 'flex', justifyContent: 'center', alignItems: 'center',
+            zIndex: 50,
+          }}
         >
-          <Link to="/commission"
-            className="w-full sm:w-auto inline-flex items-center justify-center
-                       px-7 sm:px-9 py-[0.85rem] rounded-full
-                       bg-charcoal dark:bg-[#F0EDE8] text-ivory dark:text-[#1A1814]
-                       text-[11px] sm:text-xs uppercase tracking-[0.22em] font-medium
-                       transition-all duration-300
-                       hover:bg-terracotta hover:text-ivory hover:-translate-y-[2px] hover:shadow-lg hover:shadow-terracotta/20
-                       dark:hover:bg-terracotta dark:hover:text-ivory">
-            Commission Your Artwork
-          </Link>
-          <Link to="/shop"
-            className="w-full sm:w-auto inline-flex items-center gap-2 justify-center
-                       px-7 sm:px-9 py-[0.85rem] rounded-full
-                       border border-charcoal/25 dark:border-[#F0EDE8]/22
-                       text-charcoal dark:text-[#F0EDE8]
-                       text-[11px] sm:text-xs uppercase tracking-[0.22em] font-medium
-                       transition-all duration-300
-                       hover:border-terracotta hover:text-terracotta">
-            Explore Collection
-            <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-            </svg>
-          </Link>
-        </motion.div>
-
-        {/* Stats */}
-        <motion.div
-          initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
-          transition={{ delay:1.58, duration:0.85 }}
-          className="mt-12 sm:mt-16 flex items-center gap-10 sm:gap-14 lg:gap-16"
-        >
-          {[
-            { value:'200+', label:'Artworks'   },
-            { value:'98%',  label:'Collectors' },
-            { value:'5 ★',  label:'Rating'     },
-          ].map(({ value, label }) => (
-            <div key={label} className="text-center">
-              <p className="text-xl sm:text-2xl lg:text-3xl font-display text-charcoal dark:text-[#F0EDE8] leading-none">
-                {value}
-              </p>
-              <p className="mt-1.5 text-[9px] sm:text-[10px] uppercase tracking-[0.22em] text-charcoal-muted dark:text-[#9A9590]">
-                {label}
-              </p>
-            </div>
+          {COLLECTIONS.map((c, i) => (
+            <button
+              key={c.name}
+              onClick={() => switchTo(i)}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: i === activeIdx ? 'white' : 'rgba(255,255,255,0.55)',
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 13, fontWeight: 400, letterSpacing: '0.3px',
+                padding: '6px 20px 8px',
+                position: 'relative',
+                transition: 'color 0.3s',
+                userSelect: 'none', whiteSpace: 'nowrap',
+              }}
+              onMouseEnter={e => { if (i !== activeIdx) e.currentTarget.style.color = 'rgba(255,255,255,0.88)'; }}
+              onMouseLeave={e => { if (i !== activeIdx) e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; }}
+            >
+              {c.name}
+              {/* Active underline */}
+              <span style={{
+                position: 'absolute', bottom: 0, left: 20, right: 20,
+                height: '1.5px', background: 'white', borderRadius: 1,
+                transform: i === activeIdx ? 'scaleX(1)' : 'scaleX(0)',
+                transformOrigin: 'center',
+                transition: 'transform 0.35s cubic-bezier(0.4,0,0.2,1)',
+              }} />
+            </button>
           ))}
-        </motion.div>
-      </div>
+        </div>
 
-      {/* ── 6. Scroll indicator ─────────────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity:0 }} animate={{ opacity:1 }}
-        transition={{ delay:2.2, duration:1 }}
-        className="absolute bottom-7 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-        style={{ zIndex:5 }}
-      >
-        <motion.div
-          animate={{ y:[0,7,0] }} transition={{ duration:2.4, repeat:Infinity, ease:'easeInOut' }}
-          className="w-5 h-9 rounded-full border border-charcoal/20 dark:border-[#F0EDE8]/20 flex items-start justify-center pt-1.5"
+        {/* ── DISCOVER / BROWSE BUTTON ── */}
+        <Link
+          to="/shop"
+          style={{
+            position: 'absolute', right: 52, bottom: 46, zIndex: 50,
+            display: 'flex', alignItems: 'center', gap: 14,
+            padding: '15px 28px',
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 13, fontWeight: 500, letterSpacing: '0.5px',
+            color: '#1a1a1a',
+            backgroundColor: col.accent,
+            textDecoration: 'none', border: 'none', cursor: 'pointer',
+            transition: 'background-color 0.6s ease, transform 0.2s ease',
+          }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'translateX(5px)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'translateX(0)'}
         >
-          <div className="w-1 h-2 rounded-full bg-terracotta/50" />
-        </motion.div>
-        <span className="text-[9px] uppercase tracking-[0.3em] text-charcoal-muted/60 dark:text-[#9A9590]/60">
-          Scroll
-        </span>
-      </motion.div>
-    </section>
+          Browse Collection
+          <span style={{ fontSize: 17, transition: 'transform 0.25s' }}>→</span>
+        </Link>
+
+        {/* ── FOOTER BAR ── */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0,
+          padding: '0 32px 18px', zIndex: 50,
+          display: 'flex', alignItems: 'center', gap: 28,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Link to="/about" style={{ color: 'white', fontSize: 11, fontWeight: 400, letterSpacing: '1.5px', textDecoration: 'none', opacity: 1, fontFamily: "'Inter', sans-serif", textTransform: 'uppercase', borderBottom: '1.5px solid white', paddingBottom: 1 }}>About</Link>
+            <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10 }}>·</span>
+            <Link to="/contact" style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11, fontWeight: 400, letterSpacing: '1.5px', textDecoration: 'none', fontFamily: "'Inter', sans-serif", textTransform: 'uppercase' }}>Contact</Link>
+          </div>
+          <div style={{ display: 'flex', gap: 24 }}>
+            <Link to="/commission" style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11, letterSpacing: '0.5px', textDecoration: 'none', fontFamily: "'Inter', sans-serif" }}>Commission</Link>
+            <Link to="/gallery" style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11, letterSpacing: '0.5px', textDecoration: 'none', fontFamily: "'Inter', sans-serif" }}>Gallery</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          FULL-SCREEN MENU OVERLAY — clip-path wipe animation
+      ══════════════════════════════════════════════════════════ */}
+      <div
+        style={{
+          position: 'fixed', inset: 0, zIndex: 800,
+          background: '#0d0d0d',
+          clipPath: menuOpen ? 'inset(0 0 0% 0)' : 'inset(0 0 100% 0)',
+          transition: 'clip-path 0.6s cubic-bezier(0.77,0,0.18,1)',
+          display: 'flex', flexDirection: 'column',
+        }}
+      >
+        {/* Menu top */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '28px 32px 0' }}>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 400, color: 'white', letterSpacing: '-0.3px' }}>
+            Strokes<br/>
+            <span style={{ fontSize: 13, letterSpacing: 2, opacity: 0.5, fontFamily: "'Inter', sans-serif", fontWeight: 300 }}>by Sakshi</span>
+          </div>
+          <button
+            onClick={() => setMenuOpen(false)}
+            style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', fontFamily: "'Inter', sans-serif", opacity: 0.6, display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, transition: 'opacity 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.opacity = 1}
+            onMouseLeave={e => e.currentTarget.style.opacity = 0.6}
+          >
+            <span>Close Menu</span>
+            <span style={{ fontSize: 18, lineHeight: 1 }}>✕</span>
+          </button>
+        </div>
+
+        {/* Menu links */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '0 80px' }}>
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {[
+              { num: '01.', label: 'Shop',       path: '/shop'       },
+              { num: '02.', label: 'Commission', path: '/commission' },
+              { num: '03.', label: 'Gallery',    path: '/gallery'    },
+              { num: '04.', label: 'About',      path: '/about'      },
+              { num: '05.', label: 'Contact',    path: '/contact'    },
+            ].map(item => (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setMenuOpen(false)}
+                style={{
+                  fontFamily: "'Playfair Display', serif",
+                  fontSize: 'clamp(38px, 5.5vw, 68px)',
+                  fontWeight: 300,
+                  color: 'rgba(255,255,255,0.22)',
+                  textDecoration: 'none',
+                  letterSpacing: '-1px',
+                  lineHeight: 1.25,
+                  display: 'flex', alignItems: 'baseline', gap: 16,
+                  transition: 'color 0.25s ease',
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = 'white'}
+                onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.22)'}
+              >
+                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 400, letterSpacing: 2, color: 'rgba(255,255,255,0.3)' }}>{item.num}</span>
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        {/* Menu bottom */}
+        <div style={{ padding: '0 80px 44px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[
+              { label: 'Instagram', href: 'https://instagram.com/strokesbysakshi' },
+              { label: 'WhatsApp',  href: 'https://wa.me/1234567890' },
+            ].map(s => (
+              <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
+                style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, letterSpacing: '0.5px', textDecoration: 'none', transition: 'color 0.2s', fontFamily: "'Inter', sans-serif" }}
+                onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}
+              >{s.label}</a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

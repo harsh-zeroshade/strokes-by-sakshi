@@ -54,6 +54,12 @@ export default function HomePage() {
       {/* ── Hero ── */}
       <HeroSection />
 
+      {/* ── SPACER — pushes the rest of the page below the fixed hero ── */}
+      <div style={{ height: '100vh' }} aria-hidden="true" />
+
+      {/* ── Scrollable content sits on top of the fixed hero ── */}
+      <div className="relative bg-ivory dark:bg-[#1A1814]" style={{ zIndex: 10 }}>
+
       {/* ── Brand Message ── */}
       <motion.section {...fadeUp} className="py-24 lg:py-32 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto text-center">
@@ -283,6 +289,7 @@ export default function HomePage() {
           </div>
         </div>
       </motion.section>
+      </div>  {/* end scrollable content wrapper */}
     </div>
   );
 }
