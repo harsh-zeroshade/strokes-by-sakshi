@@ -13,7 +13,6 @@ use App\Models\User;
 use App\Models\Coupon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use App\Services\CloudinaryService;
 
 class AdminController extends Controller
@@ -205,14 +204,14 @@ class AdminController extends Controller
         $product->update($validated);
 
         if ($request->hasFile('images')) {
+            $cloudinary = new CloudinaryService();
+
             if ($replaceImages) {
-                // Delete old images from Cloudinary and remove DB records
                 foreach ($product->images as $oldImage) {
-                    // Extract public_id from Cloudinary URL
                     if ($oldImage->image_url && str_contains($oldImage->image_url, 'cloudinary.com')) {
-                        preg_match('/\/v\d+\/(.+)\.[a-z]+$/', $oldImage->image_url, $matches);
-                        if (!empty($matches[1])) {
-                            Cloudinary::destroy($matches[1]);
+                        $publicId = $cloudinary->getPublicId($oldImage->image_url);
+                        if ($publicId) {
+                            $cloudinary->destroy($publicId);
                         }
                     }
                     $oldImage->delete();
@@ -222,10 +221,7 @@ class AdminController extends Controller
             $existingCount = $product->images()->count();
 
             foreach ($request->file('images') as $index => $file) {
-                $uploaded = Cloudinary::upload($file->getRealPath(), [
-                    'folder' => 'strokes-by-sakshi/products/' . $product->id,
-                ]);
-                $url = $uploaded->getSecurePath();
+                $url = $cloudinary->upload($file, 'strokes-by-sakshi/products/' . $product->id);
                 $isPrimary = ($existingCount === 0 && $index === 0);
 
                 if ($isPrimary) {
