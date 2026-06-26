@@ -14,7 +14,7 @@ use App\Models\Coupon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use App\Services\CloudinaryService;
 
 class AdminController extends Controller
 {
@@ -159,11 +159,9 @@ class AdminController extends Controller
         $product = Product::create($validated);
 
         if ($request->hasFile('images')) {
+            $cloudinary = new CloudinaryService();
             foreach ($request->file('images') as $index => $file) {
-                $uploaded = Cloudinary::upload($file->getRealPath(), [
-                    'folder' => 'strokes-by-sakshi/products/' . $product->id,
-                ]);
-                $url = $uploaded->getSecurePath();
+                $url = $cloudinary->upload($file, 'strokes-by-sakshi/products/' . $product->id);
                 $product->images()->create([
                     'image_url'     => $url,
                     'thumbnail_url' => $url,
