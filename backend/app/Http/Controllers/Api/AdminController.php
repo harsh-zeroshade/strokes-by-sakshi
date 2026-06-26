@@ -14,6 +14,7 @@ use App\Models\Coupon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class AdminController extends Controller
 {
@@ -159,13 +160,16 @@ class AdminController extends Controller
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $index => $file) {
-                $path = $file->store('products/' . $product->id, 'public');
+                $uploaded = Cloudinary::upload($file->getRealPath(), [
+                    'folder' => 'strokes-by-sakshi/products/' . $product->id,
+                ]);
+                $url = $uploaded->getSecurePath();
                 $product->images()->create([
-                    'image_url' => Storage::disk('public')->url($path),
-                    'thumbnail_url' => Storage::disk('public')->url($path),
-                    'alt_text' => $product->name,
-                    'sort_order' => $index,
-                    'is_primary' => $index === 0,
+                    'image_url'     => $url,
+                    'thumbnail_url' => $url,
+                    'alt_text'      => $product->name,
+                    'sort_order'    => $index,
+                    'is_primary'    => $index === 0,
                 ]);
             }
         }
@@ -204,33 +208,35 @@ class AdminController extends Controller
 
         if ($request->hasFile('images')) {
             if ($replaceImages) {
-                // Delete old image files from disk and remove DB records
+                // Delete old images from Cloudinary and remove DB records
                 foreach ($product->images as $oldImage) {
-                    // Extract relative path from full URL
-                    $relativePath = str_replace(
-                        Storage::disk('public')->url(''),
-                        '',
-                        $oldImage->image_url
-                    );
-                    Storage::disk('public')->delete(ltrim($relativePath, '/'));
+                    // Extract public_id from Cloudinary URL
+                    if ($oldImage->image_url && str_contains($oldImage->image_url, 'cloudinary.com')) {
+                        preg_match('/\/v\d+\/(.+)\.[a-z]+$/', $oldImage->image_url, $matches);
+                        if (!empty($matches[1])) {
+                            Cloudinary::destroy($matches[1]);
+                        }
+                    }
                     $oldImage->delete();
                 }
             }
 
-            $existingCount = $product->images()->count(); // 0 if replaced, or original count
+            $existingCount = $product->images()->count();
 
             foreach ($request->file('images') as $index => $file) {
-                $path = $file->store('products/' . $product->id, 'public');
+                $uploaded = Cloudinary::upload($file->getRealPath(), [
+                    'folder' => 'strokes-by-sakshi/products/' . $product->id,
+                ]);
+                $url = $uploaded->getSecurePath();
                 $isPrimary = ($existingCount === 0 && $index === 0);
 
-                // If making this the new primary, demote any existing primary first
                 if ($isPrimary) {
                     $product->images()->where('is_primary', true)->update(['is_primary' => false]);
                 }
 
                 $product->images()->create([
-                    'image_url'     => Storage::disk('public')->url($path),
-                    'thumbnail_url' => Storage::disk('public')->url($path),
+                    'image_url'     => $url,
+                    'thumbnail_url' => $url,
                     'alt_text'      => $product->name,
                     'sort_order'    => $existingCount + $index,
                     'is_primary'    => $isPrimary,
