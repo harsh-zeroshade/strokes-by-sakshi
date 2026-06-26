@@ -27,7 +27,7 @@ const footerLinks = {
 export default function Footer() {
   return (
     // Footer always uses a fixed dark background
-    <footer style={{ background: '#2C2C2C' }} className="text-ivory">
+    <footer style={{ background: '#2C2C2C', position: 'relative', zIndex: 10 }} className="text-ivory">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8">
           {/* Brand */}

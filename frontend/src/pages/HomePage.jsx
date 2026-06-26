@@ -58,7 +58,7 @@ export default function HomePage() {
       <div style={{ height: '100vh' }} aria-hidden="true" />
 
       {/* ── Scrollable content sits on top of the fixed hero ── */}
-      <div className="relative bg-ivory dark:bg-[#1A1814]" style={{ zIndex: 10 }}>
+      <div className="relative bg-ivory dark:bg-[#1A1814]" style={{ zIndex: 10, isolation: 'isolate' }}>
 
       {/* ── Brand Message ── */}
       <motion.section {...fadeUp} className="py-24 lg:py-32 px-4 sm:px-6">

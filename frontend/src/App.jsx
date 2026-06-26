@@ -43,14 +43,15 @@ function AnimatedRoutes() {
   const isHome   = location.pathname === '/';
 
   return (
-    <div className={isAdmin ? 'h-screen overflow-hidden' : 'min-h-screen flex flex-col bg-ivory dark:bg-[#1A1814]'}>
+    <div className={isAdmin ? 'h-screen overflow-hidden' : 'min-h-screen flex flex-col bg-ivory dark:bg-[#1A1814]'}
+         style={!isAdmin ? { position: 'relative', zIndex: isHome ? 0 : 1 } : {}}>
 
       {/* Site chrome — hidden on admin and homepage (hero has its own nav) */}
       {!isAdmin && !isHome && <Navbar />}
       {!isAdmin && <CartDrawer />}
 
       {/* Page content */}
-      <main className={isAdmin ? '' : 'flex-1'}>
+      <main className={isAdmin ? '' : 'flex-1'} style={isHome ? { position: 'relative', zIndex: 0 } : {}}>
         <AnimatePresence mode="wait" initial={false}>
           <Routes location={location} key={location.pathname}>
 
@@ -89,7 +90,11 @@ function AnimatedRoutes() {
 
       {/* Site footer + floating button — hidden on admin */}
       {!isAdmin && <WhatsAppButton />}
-      {!isAdmin && <Footer />}
+      {!isAdmin && (
+        <div style={{ position: 'relative', zIndex: 10 }}>
+          <Footer />
+        </div>
+      )}
     </div>
   );
 }
