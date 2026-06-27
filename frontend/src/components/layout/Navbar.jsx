@@ -156,11 +156,11 @@ export default function Navbar() {
               <AnimatePresence>
                 {dropdownOpen && user && (
                   <motion.div
-                    initial={{ opacity:0, y:8, scale:0.97 }}
-                    animate={{ opacity:1, y:0, scale:1 }}
-                    exit={{ opacity:0, y:6, scale:0.97 }}
-                    transition={{ duration:0.18 }}
-                    className="absolute right-0 mt-2 w-60 bg-ivory dark:bg-[#1e1c18] border border-charcoal/10 dark:border-white/8 rounded-2xl shadow-2xl shadow-black/10 py-2 z-50"
+                    initial={{ clipPath:'inset(0 0 100% 0)' }}
+                    animate={{ clipPath:'inset(0 0 0% 0)' }}
+                    exit={{ clipPath:'inset(0 0 100% 0)' }}
+                    transition={{ duration:0.6, ease:[0.77,0,0.18,1] }}
+                    className="absolute right-0 mt-2 w-60 bg-ivory dark:bg-[#1e1c18] border border-charcoal/10 dark:border-white/8 rounded-2xl shadow-2xl shadow-black/10 py-2 z-50 overflow-hidden"
                   >
                     <div className="px-4 py-3 border-b border-charcoal/8 dark:border-white/8">
                       <p className="text-sm font-medium text-charcoal dark:text-[#F0EDE8]">{user.name}</p>
