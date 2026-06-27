@@ -31,6 +31,10 @@ Route::get('/cors-test', function () {
 // Auth
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/otp/send', [AuthController::class, 'sendOtp']);
+Route::post('/otp/verify', [AuthController::class, 'verifyOtp']);
+Route::get('/auth/google/redirect', [AuthController::class, 'googleRedirect']);
+Route::get('/auth/google/callback', [AuthController::class, 'googleCallback']);
 
 // Products
 Route::get('/products', [ProductController::class, 'index']);

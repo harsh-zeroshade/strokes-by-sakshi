@@ -51,6 +51,68 @@ export function AuthProvider({ children }) {
     return data;
   };
 
+  // ── OTP: Send verification code ──────────────────────────────────
+  const sendOtp = async ({ email, type, name, password, password_confirmation }) => {
+    const { data } = await authAPI.sendOtp({ email, type, name, password, password_confirmation });
+    return data;
+  };
+
+  // ── OTP: Verify code & complete auth ─────────────────────────────
+  const verifyOtp = async ({ email, code, type }) => {
+    const { data } = await authAPI.verifyOtp({ email, code, type });
+    if (data.token) {
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
+      window.dispatchEvent(new CustomEvent('auth:login'));
+    }
+    return data;
+  };
+
+  // ── Google OAuth ────────────────────────────────────────────────
+  const googleLogin = async () => {
+    const { data } = await authAPI.googleRedirect();
+    // Open Google login in a popup
+    const width = 500;
+    const height = 600;
+    const left = window.screenX + (window.innerWidth - width) / 2;
+    const top = window.screenY + (window.innerHeight - height) / 2;
+    const popup = window.open(
+      data.url,
+      'Google Login',
+      `width=${width},height=${height},left=${left},top=${top}`
+    );
+
+    return new Promise((resolve, reject) => {
+      const handleMessage = (event) => {
+        // Security: only accept messages from our own origin
+        if (event.origin !== window.location.origin) return;
+
+        if (event.data?.type === 'google-auth') {
+          window.removeEventListener('message', handleMessage);
+          if (event.data.token) {
+            localStorage.setItem('token', event.data.token);
+            setUser(event.data.user);
+            window.dispatchEvent(new CustomEvent('auth:login'));
+            resolve(event.data);
+          } else {
+            reject(new Error(event.data.error || 'Google authentication failed.'));
+          }
+        }
+      };
+
+      window.addEventListener('message', handleMessage);
+
+      // Check if popup was closed without completing
+      const checkPopup = setInterval(() => {
+        if (popup?.closed) {
+          clearInterval(checkPopup);
+          window.removeEventListener('message', handleMessage);
+          reject(new Error('Login cancelled.'));
+        }
+      }, 500);
+    });
+  };
+
   const logout = async () => {
     try { await authAPI.logout(); } catch {}
     localStorage.removeItem('token');
@@ -74,7 +136,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile, uploadAvatar, isAdmin: user?.is_admin }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile, uploadAvatar, isAdmin: user?.is_admin, sendOtp, verifyOtp, googleLogin }}>
       {children}
     </AuthContext.Provider>
   );

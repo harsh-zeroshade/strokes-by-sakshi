@@ -5,6 +5,8 @@ import Footer from './components/layout/Footer';
 import CartDrawer from './components/cart/CartDrawer';
 import WhatsAppButton from './components/ui/WhatsAppButton';
 
+import GoogleCallbackPage from './pages/auth/GoogleCallbackPage';
+
 // Pages
 import HomePage from './pages/HomePage';
 import ShopPage from './pages/ShopPage';
@@ -40,15 +42,23 @@ import { AdminAnalyticsPage } from './pages/admin/AdminAnalytics';
 function AnimatedRoutes() {
   const location = useLocation();
   const isAdmin  = location.pathname.startsWith('/admin');
+  const isGoogleCallback = location.pathname === '/auth/google/callback';
   const isHome   = location.pathname === '/';
 
   return (
     <div className={isAdmin ? 'h-screen overflow-hidden' : 'min-h-screen flex flex-col bg-ivory dark:bg-[#1A1814]'}
          style={!isAdmin ? { position: 'relative', zIndex: isHome ? 0 : 1 } : {}}>
 
-      {/* Site chrome — hidden on admin and homepage (hero has its own nav) */}
-      {!isAdmin && !isHome && <Navbar />}
-      {!isAdmin && <CartDrawer />}
+      {/* Google callback page — opened in popup, no chrome */}
+      {isGoogleCallback ? (
+        <Routes location={location} key={location.pathname}>
+          <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
+        </Routes>
+      ) : (
+        <>
+          {/* Site chrome — hidden on admin and homepage (hero has its own nav) */}
+          {!isAdmin && !isHome && <Navbar />}
+          {!isAdmin && <CartDrawer />}
 
       {/* Page content */}
       <main className={isAdmin ? '' : 'flex-1'} style={isHome ? { position: 'relative', zIndex: 0 } : {}}>
@@ -88,12 +98,14 @@ function AnimatedRoutes() {
         </AnimatePresence>
       </main>
 
-      {/* Site footer + floating button — hidden on admin */}
-      {!isAdmin && <WhatsAppButton />}
-      {!isAdmin && (
-        <div style={{ position: 'relative', zIndex: 10 }}>
-          <Footer />
-        </div>
+          {/* Site footer + floating button — hidden on admin */}
+          {!isAdmin && <WhatsAppButton />}
+          {!isAdmin && (
+            <div style={{ position: 'relative', zIndex: 10 }}>
+              <Footer />
+            </div>
+          )}
+        </>
       )}
     </div>
   );

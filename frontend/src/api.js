@@ -53,6 +53,12 @@ export const authAPI = {
   user:          ()     => api.get('/user'),
   updateProfile: (data) => api.put('/user/profile', data),
   uploadAvatar:  (data) => api.post('/user/avatar', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  // OTP
+  sendOtp:       (data) => api.post('/otp/send', data),
+  verifyOtp:     (data) => api.post('/otp/verify', data),
+  // Google OAuth
+  googleRedirect: () => api.get('/auth/google/redirect'),
+  googleCallback: (params) => api.get('/auth/google/callback', { params }),
 };
 
 // Products
