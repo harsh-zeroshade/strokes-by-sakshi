@@ -312,78 +312,261 @@ export default function HomePage() {
       {/* ── Testimonials ── */}
       <TestimonialsSection testimonials={testimonials} />
 
-      {/* ── Instagram Gallery Strip ── */}
-      <motion.section {...fadeUp} className="py-16 lg:py-24 px-4 sm:px-6 bg-cream/30">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <span className="text-xs uppercase tracking-[0.3em] text-charcoal-muted font-medium">
-              @strokesbysakshi
+      {/* ══════════════════════════════════════════════════════════
+          FOLLOW THE JOURNEY — Delassus-style full-bleed dark grid
+          Section 05: large @handle background text, asymmetric grid,
+          hover reveals with scale + overlay, bottom follow CTA
+      ══════════════════════════════════════════════════════════ */}
+      <section className="relative overflow-hidden bg-[#0d0b08]">
+        {/* Giant background handle — purely decorative */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 flex items-center justify-center select-none pointer-events-none overflow-hidden"
+        >
+          <span
+            className="font-display whitespace-nowrap"
+            style={{
+              fontSize: 'clamp(80px,18vw,220px)',
+              color: 'rgba(199,105,79,0.04)',
+              letterSpacing: '-4px',
+              fontWeight: 300,
+              lineHeight: 1,
+            }}
+          >
+            @strokesbysakshi
+          </span>
+        </div>
+
+        <div className="relative z-10 max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16">
+          {/* Section number */}
+          <motion.div
+            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
+            viewport={{ once: true }} transition={{ duration: 1.2 }}
+            className="pt-16 sm:pt-20 select-none pointer-events-none"
+          >
+            <span className="font-display leading-none block"
+              style={{ fontSize: 'clamp(80px,16vw,180px)', color: 'rgba(199,105,79,0.06)', letterSpacing: '-4px' }}>
+              05
             </span>
-            <h2 className="mt-4 text-3xl sm:text-4xl font-display text-charcoal">Follow the Journey</h2>
-          </div>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3">
-            {(featuredProducts.length > 0 ? featuredProducts.slice(0, 6) : [...Array(6)]).map((item, i) => {
-              const imgUrl = item?.primary_image?.image_url
-                || item?.thumbnail
-                || `https://picsum.photos/seed/${70 + i}/400/400`;
-              return (
-                <a
-                  key={i}
-                  href="https://instagram.com/strokesbysakshi"
-                  target="_blank" rel="noopener noreferrer"
-                  className="aspect-square rounded-lg sm:rounded-xl overflow-hidden group relative block"
-                >
-                  <img
-                    src={imgUrl}
-                    alt={item?.name || `Artwork ${i + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-charcoal/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-ivory" fill="none" viewBox="0 0 24 24">
-                      <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" strokeWidth="1.5" />
-                      <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.5" />
-                      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" />
-                    </svg>
-                  </div>
-                </a>
-              );
-            })}
-          </div>
-          <div className="mt-8 text-center">
+          </motion.div>
+
+          {/* Header row */}
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-4 sm:-mt-8 lg:-mt-12 mb-10 sm:mb-14">
+            <div>
+              <span className="text-[10px] uppercase tracking-[0.35em] font-medium" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                05 · Follow the Journey
+              </span>
+              <h2 className="mt-3 font-display text-white leading-tight"
+                style={{ fontSize: 'clamp(1.8rem,4.5vw,3.5rem)' }}>
+                Behind the <em className="not-italic" style={{ color: '#C7694F' }}>Canvas</em>
+              </h2>
+            </div>
             <a
               href="https://instagram.com/strokesbysakshi"
               target="_blank" rel="noopener noreferrer"
-              className="inline-flex text-sm text-charcoal-muted hover:text-terracotta transition-colors uppercase tracking-wider"
+              className="self-start sm:self-end inline-flex items-center gap-2.5 text-[11px] uppercase tracking-[0.22em] transition-colors duration-300"
+              style={{ color: 'rgba(255,255,255,0.45)' }}
+              onMouseEnter={e => e.currentTarget.style.color = 'white'}
+              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.45)'}
             >
-              Follow on Instagram →
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+                <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" strokeWidth="1.5"/>
+                <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.5"/>
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
+              </svg>
+              @strokesbysakshi
+            </a>
+          </div>
+
+          {/* Asymmetric grid — Delassus product grid style */}
+          {(() => {
+            const items = featuredProducts.length > 0
+              ? featuredProducts.slice(0, 6)
+              : [...Array(6)].map((_, i) => ({ _placeholder: i }));
+            return (
+              <div className="grid grid-cols-6 grid-rows-2 gap-2 sm:gap-3" style={{ height: 'clamp(320px, 55vw, 620px)' }}>
+                {/* Large left tile — spans 3 cols, 2 rows */}
+                {[
+                  { colSpan: 'col-span-3 row-span-2', idx: 0 },
+                  { colSpan: 'col-span-2 row-span-1', idx: 1 },
+                  { colSpan: 'col-span-1 row-span-1', idx: 2 },
+                  { colSpan: 'col-span-1 row-span-1', idx: 3 },
+                  { colSpan: 'col-span-2 row-span-1', idx: 4 },
+                  /* hidden on mobile — only 4 tiles shown xs */
+                ].map(({ colSpan, idx }) => {
+                  const item = items[idx];
+                  const imgUrl = item?.primary_image?.image_url
+                    || item?.thumbnail
+                    || `https://picsum.photos/seed/${80 + idx}/600/600`;
+                  return (
+                    <motion.a
+                      key={idx}
+                      href="https://instagram.com/strokesbysakshi"
+                      target="_blank" rel="noopener noreferrer"
+                      className={`${colSpan} relative overflow-hidden group ${idx >= 4 ? 'hidden sm:block' : ''}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: '-60px' }}
+                      transition={{ delay: idx * 0.07, duration: 0.7, ease: [0.16,1,0.3,1] }}
+                    >
+                      <img
+                        src={imgUrl}
+                        alt={item?.name || `Artwork ${idx + 1}`}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-400"
+                        style={{ background: 'linear-gradient(to top, rgba(13,11,8,0.82) 0%, transparent 60%)' }}>
+                        <div className="flex items-center gap-2">
+                          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="1.5">
+                            <rect x="2" y="2" width="20" height="20" rx="5"/>
+                            <circle cx="12" cy="12" r="4"/>
+                            <circle cx="17.5" cy="6.5" r="1" fill="white" stroke="none"/>
+                          </svg>
+                          <span className="text-[10px] uppercase tracking-[0.2em] text-white/80">View</span>
+                        </div>
+                      </div>
+                    </motion.a>
+                  );
+                })}
+              </div>
+            );
+          })()}
+
+          {/* Bottom CTA row */}
+          <div className="mt-8 sm:mt-10 pb-16 sm:pb-20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+            <p className="text-xs sm:text-sm leading-relaxed max-w-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              Follow the process — from blank canvas to finished piece. Updates, behind-the-scenes and new drops.
+            </p>
+            <a
+              href="https://instagram.com/strokesbysakshi"
+              target="_blank" rel="noopener noreferrer"
+              className="flex-shrink-0 inline-flex items-center gap-3 px-8 py-3.5 text-[11px] uppercase tracking-[0.22em] font-medium transition-all duration-300"
+              style={{ border: '1px solid rgba(255,255,255,0.25)', color: 'white' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#0d0b08'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'white'; }}
+            >
+              Follow on Instagram
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+              </svg>
             </a>
           </div>
         </div>
-      </motion.section>
 
-      {/* ── Final CTA ── */}
-      <motion.section {...fadeUp} className="py-24 lg:py-32 px-4 sm:px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display text-charcoal leading-tight">
-            Ready to own a piece<br />
-            <span className="italic text-terracotta">of original art?</span>
-          </h2>
-          <p className="mt-6 text-base sm:text-lg text-charcoal-muted">
-            Whether you're looking for the perfect piece or want to commission something uniquely yours.
-          </p>
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-            <Link to="/shop"
-              className="w-full sm:w-auto px-10 py-4 bg-charcoal text-ivory text-sm uppercase tracking-[0.2em] font-medium rounded-full hover:bg-charcoal-light transition-all text-center">
-              Browse the Collection
-            </Link>
-            <Link to="/contact"
-              className="w-full sm:w-auto px-10 py-4 border-2 border-charcoal/20 text-charcoal text-sm uppercase tracking-[0.2em] font-medium rounded-full hover:border-charcoal/40 transition-all text-center">
-              Get in Touch
-            </Link>
+        {/* Bottom rule */}
+        <div className="w-full h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          FINAL CTA — Delassus-style: ivory bg, giant serif headline
+          centered, section 06, two sharp-edge CTA buttons side by side,
+          bottom metadata strip matching Commission section footer bar
+      ══════════════════════════════════════════════════════════ */}
+      <section className="relative overflow-hidden bg-ivory dark:bg-[#1A1814]">
+        {/* Top rule */}
+        <div className="w-full h-px bg-charcoal/8 dark:bg-white/8" />
+
+        <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16">
+          {/* Giant background number */}
+          <motion.div
+            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
+            viewport={{ once: true }} transition={{ duration: 1.2 }}
+            className="pt-16 sm:pt-20 select-none pointer-events-none"
+          >
+            <span className="font-display leading-none block"
+              style={{ fontSize: 'clamp(80px,16vw,180px)', color: 'rgba(44,44,44,0.05)', letterSpacing: '-4px' }}>
+              06
+            </span>
+          </motion.div>
+
+          <div className="pb-20 sm:pb-28 -mt-4 sm:-mt-8 lg:-mt-14">
+            {/* Eyebrow */}
+            <motion.span
+              initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.7 }}
+              className="block text-[10px] uppercase tracking-[0.35em] text-charcoal-muted dark:text-[#9A9590] font-medium mb-8 sm:mb-10"
+            >
+              06 · Start Your Journey
+            </motion.span>
+
+            {/* Giant headline — full width like Delassus product name */}
+            <motion.h2
+              initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 1.0, ease: [0.16,1,0.3,1] }}
+              className="font-display text-charcoal dark:text-[#F0EDE8] leading-[0.95] tracking-tight"
+              style={{ fontSize: 'clamp(3rem,9.5vw,10rem)' }}
+            >
+              Ready to own<br/>
+              a piece of<br/>
+              <em className="not-italic text-terracotta">original art?</em>
+            </motion.h2>
+
+            {/* Divider */}
+            <motion.div
+              initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3, duration: 1.0, ease: [0.16,1,0.3,1] }}
+              className="mt-10 sm:mt-12 h-px origin-left"
+              style={{ background: 'rgba(44,44,44,0.12)' }}
+            />
+
+            {/* Bottom row — body copy left, CTAs right */}
+            <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-8">
+              <motion.p
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ delay: 0.2, duration: 0.8 }}
+                className="text-sm sm:text-base leading-relaxed max-w-sm text-charcoal-muted dark:text-[#9A9590]"
+              >
+                Whether you're looking for the perfect piece for your home or want to commission
+                something uniquely yours — the canvas is waiting.
+              </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ delay: 0.35, duration: 0.8 }}
+                className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto"
+              >
+                <Link
+                  to="/shop"
+                  className="inline-flex items-center justify-center gap-3 px-8 py-4 text-[11px] uppercase tracking-[0.22em] font-medium transition-all duration-300 hover:-translate-y-[2px] whitespace-nowrap"
+                  style={{ background: '#2C2C2C', color: 'white', borderRadius: 0 }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#C7694F'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#2C2C2C'}
+                >
+                  Browse the Collection
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                  </svg>
+                </Link>
+                <Link
+                  to="/contact"
+                  className="inline-flex items-center justify-center px-8 py-4 text-[11px] uppercase tracking-[0.22em] font-medium transition-all duration-300 whitespace-nowrap dark:text-[#F0EDE8]"
+                  style={{ border: '1px solid rgba(44,44,44,0.25)', color: '#2C2C2C', borderRadius: 0 }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#2C2C2C'; e.currentTarget.style.color = 'white'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2C2C2C'; }}
+                >
+                  Get in Touch
+                </Link>
+              </motion.div>
+            </div>
           </div>
         </div>
-      </motion.section>
+
+        {/* Bottom rule + metadata strip */}
+        <div className="w-full h-px bg-charcoal/8 dark:bg-white/8" />
+        <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 py-5 flex items-center justify-between">
+          <span className="text-[10px] uppercase tracking-[0.3em] text-charcoal-muted dark:text-[#9A9590]">
+            Strokes by Sakshi · Every brushstroke tells a story
+          </span>
+          <Link to="/shop"
+            className="text-[10px] uppercase tracking-[0.3em] text-charcoal-muted dark:text-[#9A9590] hover:text-terracotta transition-colors">
+            Shop →
+          </Link>
+        </div>
+      </section>
       </div>  {/* end scrollable content wrapper */}
     </div>
   );
