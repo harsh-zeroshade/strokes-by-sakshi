@@ -170,28 +170,7 @@ export default function HomePage() {
       )}
 
       {/* ── Featured Artworks ── */}
-      <motion.section {...fadeUp} className="py-16 lg:py-24 px-4 sm:px-6 dark:bg-[#1A1814]">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-wrap items-end justify-between gap-4 mb-10">
-            <div>
-              <span className="text-[10px] uppercase tracking-[0.35em] text-charcoal-muted font-medium">
-                {collections.length > 0 ? '03' : '02'} · Featured Works
-              </span>
-              <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-display text-charcoal dark:text-[#F0EDE8]">
-                Original Artworks
-              </h2>
-            </div>
-            <Link to="/shop"
-              className="text-[11px] uppercase tracking-[0.2em] text-charcoal-muted hover:text-charcoal dark:text-[#9A9590] dark:hover:text-[#F0EDE8] transition-colors flex items-center gap-2">
-              View All
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-              </svg>
-            </Link>
-          </div>
-          <FeaturedSlider products={featuredProducts} />
-        </div>
-      </motion.section>
+      <FeaturedSlider products={featuredProducts} />
 
       {/* ══════════════════════════════════════════════════════════
           COMMISSION — Delassus-style: dark full-bleed, large number,

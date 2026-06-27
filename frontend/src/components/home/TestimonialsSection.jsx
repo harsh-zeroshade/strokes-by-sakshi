@@ -156,6 +156,10 @@ export default function TestimonialsSection({ testimonials }) {
 
   return (
     <section className="relative py-24 lg:py-32 overflow-hidden bg-[#1A1208] dark:bg-[#0d0b08]">
+      {/* Ghost section number */}
+      <div aria-hidden="true" className="absolute top-10 sm:top-14 left-6 sm:left-10 lg:left-16 select-none pointer-events-none">
+        <span className="font-display leading-none" style={{ fontSize:'clamp(80px,16vw,180px)', color:'rgba(199,105,79,0.05)', letterSpacing:'-4px', display:'block' }}>04</span>
+      </div>
       {/* Three.js background */}
       <div ref={containerRef} className="absolute inset-0" aria-hidden="true">
         <TestimonialsScene containerRef={containerRef} />
@@ -173,9 +177,9 @@ export default function TestimonialsSection({ testimonials }) {
           viewport={{ once: true, margin: '-80px' }} transition={{ duration: 0.9, ease: [0.16,1,0.3,1] }}
           className="text-center mb-16 sm:mb-20"
         >
-          <span className="text-[10px] sm:text-xs uppercase tracking-[0.35em] text-white/35 font-medium">Kind Words</span>
+          <span className="text-[10px] sm:text-xs uppercase tracking-[0.35em] text-white/35 font-medium">04 · Kind Words</span>
           <h2 className="mt-4 font-display text-white leading-tight" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)' }}>
-            What Collectors <span className="italic text-terracotta-light" style={{ color: '#E09A85' }}>Say</span>
+            What Collectors <span className="not-italic" style={{ color: '#E09A85' }}>Say</span>
           </h2>
         </motion.div>
 
