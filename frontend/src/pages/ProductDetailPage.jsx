@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { productAPI, wishlistAPI } from '../api';
 import { useCart } from '../context/CartContext';
 import { STORAGE_URL } from '../config';
+import ReviewsSection from '../components/product/ReviewsSection';
 
 /* ─── helpers ─────────────────────────────────────────────────────── */
 function getImg(src) {
@@ -35,13 +36,13 @@ const fadeUp = {
 /* ─── Skeleton ─────────────────────────────────────────────────────── */
 function Skeleton() {
   return (
-    <div className="pt-16 sm:pt-20 min-h-screen bg-ivory dark:bg-[#1A1814] px-4 sm:px-6 lg:px-8">
-      <div className="max-w-[1400px] mx-auto py-8 sm:py-12">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
-          <div className="aspect-[4/5] rounded-2xl bg-cream dark:bg-[#252219] animate-pulse" />
+    <div className="min-h-screen bg-ivory dark:bg-[#1A1814] px-4 sm:px-6 lg:px-10" style={{ paddingTop: 120 }}>
+      <div className="max-w-[1200px] mx-auto py-8 sm:py-10">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-10">
+          <div className="rounded-xl bg-cream dark:bg-[#252219] animate-pulse" style={{ aspectRatio:'1/1', maxHeight:520 }} />
           <div className="space-y-5 pt-2">
-            {[80, 50, 100, 60, 40].map((w, i) => (
-              <div key={i} className={`h-5 rounded bg-cream dark:bg-[#252219] animate-pulse w-[${w}%]`} />
+            {[75, 45, 100, 55, 35, 80].map((w, i) => (
+              <div key={i} className="h-4 rounded bg-cream dark:bg-[#252219] animate-pulse" style={{ width:`${w}%` }} />
             ))}
           </div>
         </div>
@@ -148,43 +149,43 @@ export default function ProductDetailPage() {
   ].filter(t => t.show);
 
   return (
-    <div className="min-h-screen bg-ivory dark:bg-[#1A1814]">
+    <div className="min-h-screen bg-ivory dark:bg-[#1A1814]" style={{ paddingTop: 68 }}>
       {/* Zoom modal */}
       {zoomed && mainImg && (
         <ZoomModal src={mainImg} alt={product.name} onClose={() => setZoomed(false)} />
       )}
 
-      {/* ── Sticky breadcrumb bar ── */}
-      <div className="sticky top-[64px] sm:top-[68px] z-40 bg-ivory/90 dark:bg-[#1A1814]/90 backdrop-blur-md border-b border-charcoal/6 dark:border-white/6">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 h-10 flex items-center gap-2 text-[11px] text-charcoal-muted dark:text-[#9A9590]">
-          <button onClick={() => navigate(-1)} className="hover:text-charcoal dark:hover:text-[#F0EDE8] transition-colors flex items-center gap-1">
+      {/* ── Breadcrumb ── */}
+      <div className="bg-ivory/95 dark:bg-[#1A1814]/95 backdrop-blur-md border-b border-charcoal/6 dark:border-white/6">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-10 h-10 flex items-center gap-2 text-[11px] text-charcoal-muted dark:text-[#9A9590]">
+          <button onClick={() => navigate(-1)} className="hover:text-charcoal dark:hover:text-[#F0EDE8] transition-colors flex items-center gap-1" aria-label="Back">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
             </svg>
           </button>
-          <span className="opacity-40">·</span>
-          <Link to="/shop" className="hover:text-charcoal dark:hover:text-[#F0EDE8] transition-colors uppercase tracking-wider">Shop</Link>
-          <span className="opacity-40">/</span>
-          <span className="text-charcoal dark:text-[#F0EDE8] uppercase tracking-wider truncate max-w-[180px] sm:max-w-none">{product.name}</span>
+          <span className="opacity-30">·</span>
+          <Link to="/shop" className="hover:text-charcoal dark:hover:text-[#F0EDE8] transition-colors uppercase tracking-[0.14em]">Shop</Link>
+          <span className="opacity-30">/</span>
+          <span className="text-charcoal dark:text-[#F0EDE8] uppercase tracking-[0.14em] truncate">{product.name}</span>
         </div>
       </div>
 
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 pb-20">
-        <div className="grid lg:grid-cols-[1fr_1fr] xl:grid-cols-[1.1fr_0.9fr] gap-8 lg:gap-12 xl:gap-20">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-10 pt-8 sm:pt-12 pb-20">
+        <div className="grid lg:grid-cols-2 gap-6 lg:gap-10 xl:gap-16 items-start">
 
           {/* ════════════════════════════════════════
               LEFT — Image gallery
           ════════════════════════════════════════ */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
+            initial={{ opacity: 0, x: -24 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease }}
-            className="flex flex-col gap-3"
+            className="flex flex-col gap-3 lg:sticky lg:top-[118px]"
           >
-            {/* Main image */}
+            {/* Main image — capped height so it doesn't dominate */}
             <div
-              className="relative rounded-2xl overflow-hidden bg-cream dark:bg-[#252219] cursor-zoom-in group"
-              style={{ aspectRatio: '4/5' }}
+              className="relative rounded-xl sm:rounded-2xl overflow-hidden bg-cream dark:bg-[#252219] cursor-zoom-in group"
+              style={{ aspectRatio: '1/1', maxHeight: '520px' }}
               onClick={() => mainImg && setZoomed(true)}
             >
               <AnimatePresence mode="wait">
@@ -484,10 +485,13 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
+      {/* ── Reviews ── */}
+      <ReviewsSection product={product} />
+
       {/* ── Related Works ── */}
       {related.length > 0 && (
         <section className="bg-cream/40 dark:bg-[#141210] border-t border-charcoal/8 dark:border-white/6">
-          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-10 py-14 sm:py-20">
             <div className="flex items-end justify-between mb-8 sm:mb-10">
               <div>
                 <span className="text-[10px] uppercase tracking-[0.3em] text-charcoal-muted dark:text-[#9A9590]">You may also like</span>

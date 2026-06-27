@@ -58,6 +58,7 @@ Route::get('/custom-orders/track/{orderNumber}', [CustomOrderController::class, 
 
 // Reviews
 Route::get('/reviews/{product}', [ReviewController::class, 'index']);
+Route::middleware('auth:sanctum')->get('/reviews/{product}/can-review', [ReviewController::class, 'canReview']);
 
 /*
 |--------------------------------------------------------------------------

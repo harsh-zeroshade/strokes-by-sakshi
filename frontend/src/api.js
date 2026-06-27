@@ -110,7 +110,8 @@ export const wishlistAPI = {
 // Reviews
 export const reviewAPI = {
   forProduct: (productId) => api.get(`/reviews/${productId}`),
-  create: (data) => api.post('/reviews', data),
+  canReview:  (productId) => api.get(`/reviews/${productId}/can-review`),
+  create:     (data)      => api.post('/reviews', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
 };
 
 // Admin
