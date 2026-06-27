@@ -27,9 +27,14 @@ return [
         'http://localhost:4173',
         'https://strokes-by-sakshi.zya.me',
         'https://strokes-by-sakshi.netlify.app',
+        // Vercel deployments — exact domain + wildcard pattern for preview URLs
+        'https://strokes-by-sakshi.vercel.app',
     ],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        // Covers all Vercel preview URLs: strokes-by-sakshi-*.vercel.app
+        '#^https://strokes-by-sakshi(-[a-z0-9-]+)?\.vercel\.app$#',
+    ],
 
     'allowed_headers' => ['*'],
 
