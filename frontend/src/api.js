@@ -47,11 +47,12 @@ api.interceptors.response.use(
 
 // Auth
 export const authAPI = {
-  register: (data) => api.post('/register', data),
-  login: (data) => api.post('/login', data),
-  logout: () => api.post('/logout'),
-  user: () => api.get('/user'),
+  register:      (data) => api.post('/register', data),
+  login:         (data) => api.post('/login', data),
+  logout:        ()     => api.post('/logout'),
+  user:          ()     => api.get('/user'),
   updateProfile: (data) => api.put('/user/profile', data),
+  uploadAvatar:  (data) => api.post('/user/avatar', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
 };
 
 // Products

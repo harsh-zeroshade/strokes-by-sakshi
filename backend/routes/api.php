@@ -71,6 +71,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
     Route::put('/user/profile', [AuthController::class, 'updateProfile']);
+    Route::post('/user/avatar', [AuthController::class, 'uploadAvatar']);
 
     // Cart (authenticated)
     Route::post('/cart/save-for-later/{item}', [CartController::class, 'saveForLater']);

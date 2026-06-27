@@ -127,14 +127,36 @@ class AuthController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'phone' => 'sometimes|string|max:20',
-            'bio' => 'sometimes|nullable|string|max:1000',
+            'name'       => 'sometimes|string|max:255',
+            'phone'      => 'sometimes|string|max:20',
+            'bio'        => 'sometimes|nullable|string|max:1000',
             'avatar_url' => 'sometimes|nullable|url',
         ]);
 
         $user->update($validated);
 
         return response()->json($user);
+    }
+
+    public function uploadAvatar(Request $request): JsonResponse
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,webp,jpg|max:3072',
+        ]);
+
+        $user = $request->user();
+
+        // Delete old avatar file if it was one we stored
+        if ($user->avatar_url && str_contains($user->avatar_url, '/storage/avatars/')) {
+            $oldPath = str_replace('/storage/', '', parse_url($user->avatar_url, PHP_URL_PATH));
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+        }
+
+        $path      = $request->file('avatar')->store('avatars', 'public');
+        $avatarUrl = \Illuminate\Support\Facades\Storage::url($path);
+
+        $user->update(['avatar_url' => $avatarUrl]);
+
+        return response()->json(['avatar_url' => $avatarUrl, 'user' => $user]);
     }
 }

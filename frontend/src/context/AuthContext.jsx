@@ -65,8 +65,16 @@ export function AuthProvider({ children }) {
     return data;
   };
 
+  const uploadAvatar = async (file) => {
+    const fd = new FormData();
+    fd.append('avatar', file);
+    const { data } = await authAPI.uploadAvatar(fd);
+    setUser(prev => ({ ...prev, avatar_url: data.avatar_url }));
+    return data;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile, isAdmin: user?.is_admin }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile, uploadAvatar, isAdmin: user?.is_admin }}>
       {children}
     </AuthContext.Provider>
   );
