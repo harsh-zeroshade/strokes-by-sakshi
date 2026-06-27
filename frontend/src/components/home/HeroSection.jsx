@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
 import * as THREE from 'three';
+import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
+import { useTheme } from '../../context/ThemeContext';
 
 /* ══════════════════════════════════════════════════════════════════════════
    COLLECTIONS CONFIG — adapted from Delassus PRODUCTS pattern
@@ -200,8 +204,13 @@ export default function HeroSection() {
   const sectionRef  = useRef(null);
   const [activeIdx, setActiveIdx]   = useState(0);
   const [title,     setTitle]       = useState(COLLECTIONS[0].name);
-  const [titleState, setTitleState] = useState('in'); // 'in' | 'out'
+  const [titleState, setTitleState] = useState('in');
   const [menuOpen,  setMenuOpen]    = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const { user, isAdmin, logout } = useAuth();
+  const { itemCount, setCartOpen } = useCart();
+  const { dark, toggle } = useTheme();
 
   /* Three.js state stored in refs so they survive re-renders */
   const threeRef = useRef({
@@ -428,7 +437,6 @@ export default function HeroSection() {
                 Strokes
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-                {/* 3×3 dot grid — exact Delassus pattern */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 4px)', gap: '2.5px', marginTop: 1 }}>
                   {[...Array(9)].map((_, i) => (
                     <div key={i} style={{ width: 4, height: 4, background: 'white', borderRadius: '50%' }} />
@@ -438,7 +446,6 @@ export default function HeroSection() {
                   by Sakshi
                 </span>
               </div>
-              {/* Badge */}
               <div style={{ marginTop: 8, border: '1px solid rgba(255,255,255,0.5)', borderRadius: 2, padding: '3px 8px', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                 <svg width="11" height="11" viewBox="0 0 20 20" fill="white" opacity="0.8"><polygon points="10,2 18,7 18,13 10,18 2,13 2,7"/></svg>
                 <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 9, color: 'rgba(255,255,255,0.8)', letterSpacing: '1.5px', fontStyle: 'italic' }}>India</span>
@@ -446,16 +453,106 @@ export default function HeroSection() {
             </Link>
           </div>
 
-          {/* Hamburger */}
-          <button
-            onClick={() => setMenuOpen(true)}
-            aria-label="Open menu"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, marginTop: 2, display: 'flex', flexDirection: 'column', gap: 5 }}
-          >
-            {[0,1,2].map(i => (
-              <span key={i} style={{ display: 'block', width: 26, height: 1, background: 'white' }} />
-            ))}
-          </button>
+          {/* Right side: icons + hamburger */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+            {/* Theme toggle */}
+            <button onClick={toggle} aria-label="Toggle theme"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, color: 'rgba(255,255,255,0.75)', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.color = 'white'}
+              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.75)'}
+            >
+              {dark
+                ? <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><circle cx="12" cy="12" r="4"/><path strokeLinecap="round" d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                : <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+              }
+            </button>
+
+            {/* Cart */}
+            <button onClick={() => setCartOpen(true)} aria-label="Cart"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, color: 'rgba(255,255,255,0.75)', position: 'relative', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.color = 'white'}
+              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.75)'}
+            >
+              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+              {itemCount > 0 && (
+                <span style={{ position: 'absolute', top: 4, right: 4, width: 16, height: 16, background: 'white', color: col.bg, fontSize: 9, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, lineHeight: 1 }}>
+                  {itemCount}
+                </span>
+              )}
+            </button>
+
+            {/* Account */}
+            <div style={{ position: 'relative' }}>
+              {user ? (
+                <button onClick={() => setDropdownOpen(p => !p)} aria-label="Account"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, color: 'rgba(255,255,255,0.75)', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.color = 'white'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.75)'}
+                >
+                  <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </button>
+              ) : (
+                <Link to="/login" aria-label="Login"
+                  style={{ display: 'flex', alignItems: 'center', padding: 8, color: 'rgba(255,255,255,0.75)', transition: 'color 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.color = 'white'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.75)'}
+                >
+                  <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </Link>
+              )}
+              {/* Account dropdown */}
+              <AnimatePresence>
+                {dropdownOpen && user && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.97 }}
+                    transition={{ duration: 0.18 }}
+                    style={{ position: 'absolute', right: 0, top: '100%', marginTop: 8, width: 220, background: 'rgba(20,18,14,0.96)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 16, padding: '8px 0', zIndex: 200, boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}
+                  >
+                    <div style={{ padding: '10px 16px 10px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: 4 }}>
+                      <p style={{ fontSize: 13, fontWeight: 500, color: 'white', fontFamily: "'Inter', sans-serif" }}>{user.name}</p>
+                      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', fontFamily: "'Inter', sans-serif", marginTop: 2 }}>{user.email}</p>
+                    </div>
+                    {[
+                      { to: '/account',               label: 'My Profile'    },
+                      { to: '/account/orders',        label: 'My Orders'     },
+                      { to: '/account/custom-orders', label: 'Custom Orders' },
+                      { to: '/account/wishlist',      label: 'Wishlist'      },
+                    ].map(item => (
+                      <Link key={item.to} to={item.to} onClick={() => setDropdownOpen(false)}
+                        style={{ display: 'block', padding: '9px 16px', fontSize: 13, color: 'rgba(255,255,255,0.65)', textDecoration: 'none', fontFamily: "'Inter', sans-serif", transition: 'color 0.15s' }}
+                        onMouseEnter={e => e.currentTarget.style.color = 'white'}
+                        onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.65)'}
+                      >{item.label}</Link>
+                    ))}
+                    {isAdmin && (
+                      <Link to="/admin" onClick={() => setDropdownOpen(false)}
+                        style={{ display: 'block', padding: '9px 16px', fontSize: 13, color: '#E09A85', textDecoration: 'none', fontFamily: "'Inter', sans-serif", borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 4 }}>
+                        Admin Panel
+                      </Link>
+                    )}
+                    <button onClick={() => { logout(); setDropdownOpen(false); }}
+                      style={{ width: '100%', textAlign: 'left', padding: '9px 16px', fontSize: 13, color: 'rgba(255,255,255,0.5)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif", borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 4 }}>
+                      Sign Out
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Divider */}
+            <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.2)', margin: '0 4px' }} />
+
+            {/* Hamburger */}
+            <button onClick={() => setMenuOpen(true)} aria-label="Open menu"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, display: 'flex', flexDirection: 'column', gap: 5 }}
+            >
+              {[0,1,2].map(i => (
+                <span key={i} style={{ display: 'block', width: 26, height: 1, background: 'white' }} />
+              ))}
+            </button>
+          </div>
         </div>
 
         {/* ── BIG TITLE ── */}

@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import HeroSection from '../components/home/HeroSection';
 import FeaturedSlider from '../components/home/FeaturedSlider';
 import CollectionCards from '../components/home/CollectionCards';
+import TestimonialsSection from '../components/home/TestimonialsSection';
 import { productAPI } from '../api';
 import { STORAGE_URL } from '../config';
 
@@ -60,36 +61,108 @@ export default function HomePage() {
       {/* ── Scrollable content sits on top of the fixed hero ── */}
       <div className="relative bg-ivory dark:bg-[#1A1814]" style={{ zIndex: 10, isolation: 'isolate' }}>
 
-      {/* ── Brand Message ── */}
-      <motion.section {...fadeUp} className="py-24 lg:py-32 px-4 sm:px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <span className="text-xs uppercase tracking-[0.3em] text-charcoal-muted font-medium">
-            Our Philosophy
-          </span>
-          <h2 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-display text-charcoal leading-tight">
-            Every piece of art<br />
-            <span className="italic text-terracotta">tells a story</span>
-          </h2>
-          <p className="mt-8 text-base sm:text-lg text-charcoal-muted leading-relaxed max-w-2xl mx-auto">
-            At Strokes by Sakshi, we believe art is more than decoration — it's an emotional archive.
-            Each portrait, each landscape, each abstract expression carries the weight of human experience,
-            transformed into visual poetry on canvas.
-          </p>
+      {/* ══════════════════════════════════════════════════════════
+          OUR PHILOSOPHY — Delassus-style: full-bleed, large number,
+          split text left / quote right, thin rule dividers
+      ══════════════════════════════════════════════════════════ */}
+      <section className="relative overflow-hidden bg-ivory dark:bg-[#1A1814]">
+        {/* Top rule */}
+        <div className="w-full h-px bg-charcoal/8 dark:bg-white/8" />
+
+        <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16">
+          {/* Large eyebrow number — Delassus aesthetic */}
+          <motion.div
+            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
+            viewport={{ once: true }} transition={{ duration: 1.2 }}
+            className="pt-16 sm:pt-20 select-none pointer-events-none"
+          >
+            <span className="font-display text-[clamp(80px,16vw,180px)] font-300 leading-none"
+              style={{ color: 'rgba(199,105,79,0.08)', letterSpacing: '-4px', display: 'block' }}>
+              01
+            </span>
+          </motion.div>
+
+          {/* Split layout */}
+          <div className="grid lg:grid-cols-2 gap-0 -mt-8 sm:-mt-12 lg:-mt-16 pb-20 sm:pb-28">
+            {/* Left — big headline */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.9, ease: [0.16,1,0.3,1] }}
+              className="flex flex-col justify-end pr-0 lg:pr-16 pb-0 lg:pb-0"
+            >
+              <span className="text-[10px] uppercase tracking-[0.35em] text-charcoal-muted dark:text-[#9A9590] font-medium mb-5">
+                Our Philosophy
+              </span>
+              <h2 className="font-display text-charcoal dark:text-[#F0EDE8] leading-[1.0] tracking-tight"
+                style={{ fontSize: 'clamp(2.8rem,6.5vw,6rem)' }}>
+                Every piece<br/>
+                of art<br/>
+                <em className="not-italic text-terracotta">tells a story</em>
+              </h2>
+              <div className="mt-8 h-px w-12 bg-terracotta/40" />
+            </motion.div>
+
+            {/* Right — body copy + stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ delay: 0.18, duration: 0.9, ease: [0.16,1,0.3,1] }}
+              className="flex flex-col justify-end pt-10 lg:pt-0 lg:pl-4 lg:border-l border-charcoal/10 dark:border-white/8"
+            >
+              <p className="text-base sm:text-lg text-charcoal-muted dark:text-[#9A9590] leading-relaxed max-w-prose">
+                At Strokes by Sakshi, art is more than decoration — it's an emotional archive.
+                Each portrait, landscape, and abstract expression carries the weight of human
+                experience, transformed into visual poetry on canvas.
+              </p>
+              <p className="mt-5 text-sm text-charcoal-muted/70 dark:text-[#9A9590]/70 leading-relaxed max-w-prose">
+                Every piece begins with a conversation. I listen to what matters to you —
+                a face, a place, a feeling — and I paint it so it lasts a lifetime.
+              </p>
+
+              {/* Stat row */}
+              <div className="mt-10 flex items-center gap-10 sm:gap-14">
+                {[
+                  { v: '200+', l: 'Original works' },
+                  { v: '98%',  l: 'Satisfied collectors' },
+                  { v: '6+',   l: 'Years creating' },
+                ].map(({ v, l }) => (
+                  <div key={l}>
+                    <p className="font-display text-2xl sm:text-3xl text-charcoal dark:text-[#F0EDE8] leading-none">{v}</p>
+                    <p className="mt-1.5 text-[10px] uppercase tracking-[0.2em] text-charcoal-muted dark:text-[#9A9590]">{l}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-8">
+                <Link to="/about"
+                  className="inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.2em] text-charcoal dark:text-[#F0EDE8] hover:text-terracotta dark:hover:text-terracotta transition-colors duration-300">
+                  Meet the Artist
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                  </svg>
+                </Link>
+              </div>
+            </motion.div>
+          </div>
         </div>
-      </motion.section>
+
+        {/* Bottom rule */}
+        <div className="w-full h-px bg-charcoal/8 dark:bg-white/8" />
+      </section>
 
       {/* ── Featured Collections ── */}
       {collections.length > 0 && (
-        <motion.section {...fadeUp} className="py-16 lg:py-24 px-4 sm:px-6 bg-cream/50">
+        <motion.section {...fadeUp} className="py-16 lg:py-24 px-4 sm:px-6 bg-cream/50 dark:bg-cream/5">
           <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-12">
-              <span className="text-xs uppercase tracking-[0.3em] text-charcoal-muted font-medium">
-                Curated Collections
-              </span>
-              <h2 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-display text-charcoal">
-                Explore Our Worlds
-              </h2>
-              <p className="mt-3 text-sm text-charcoal-muted">Hover to explore · Click to browse</p>
+            <div className="flex items-end justify-between mb-12">
+              <div>
+                <span className="text-[10px] uppercase tracking-[0.35em] text-charcoal-muted font-medium">02 · Curated Collections</span>
+                <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-display text-charcoal dark:text-[#F0EDE8]">
+                  Explore Our Worlds
+                </h2>
+              </div>
+              <p className="hidden sm:block text-xs text-charcoal-muted dark:text-[#9A9590]">Hover to explore · Click to browse</p>
             </div>
             <CollectionCards collections={collections.slice(0, 4)} />
           </div>
@@ -97,125 +170,147 @@ export default function HomePage() {
       )}
 
       {/* ── Featured Artworks ── */}
-      <motion.section {...fadeUp} className="py-16 lg:py-24 px-4 sm:px-6">
+      <motion.section {...fadeUp} className="py-16 lg:py-24 px-4 sm:px-6 dark:bg-[#1A1814]">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-end justify-between gap-4 mb-10">
             <div>
-              <span className="text-xs uppercase tracking-[0.3em] text-charcoal-muted font-medium">
-                Featured Works
+              <span className="text-[10px] uppercase tracking-[0.35em] text-charcoal-muted font-medium">
+                {collections.length > 0 ? '03' : '02'} · Featured Works
               </span>
-              <h2 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-display text-charcoal">
+              <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-display text-charcoal dark:text-[#F0EDE8]">
                 Original Artworks
               </h2>
             </div>
             <Link to="/shop"
-              className="text-sm text-charcoal-muted hover:text-charcoal transition-colors uppercase tracking-wider">
-              View All →
+              className="text-[11px] uppercase tracking-[0.2em] text-charcoal-muted hover:text-charcoal dark:text-[#9A9590] dark:hover:text-[#F0EDE8] transition-colors flex items-center gap-2">
+              View All
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+              </svg>
             </Link>
           </div>
           <FeaturedSlider products={featuredProducts} />
         </div>
       </motion.section>
 
-      {/* ── Commission Highlight ── */}
-      <motion.section {...fadeUp} className="py-24 lg:py-32 px-4 sm:px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-charcoal" />
-        <div className="absolute inset-0 bg-noise opacity-10" />
-        <div className="relative z-10 max-w-4xl mx-auto text-center">
+      {/* ══════════════════════════════════════════════════════════
+          COMMISSION — Delassus-style: dark full-bleed, large number,
+          side-by-side headline + process steps, accent CTA button
+      ══════════════════════════════════════════════════════════ */}
+      <section className="relative overflow-hidden" style={{ background: '#0d0b08' }}>
+        {/* Subtle warm gradient wash */}
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true"
+          style={{ background: 'radial-gradient(ellipse 80% 60% at 20% 50%, rgba(199,105,79,0.10) 0%, transparent 65%), radial-gradient(ellipse 50% 70% at 85% 80%, rgba(201,169,78,0.07) 0%, transparent 60%)' }} />
+
+        <div className="relative z-10 max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16">
+
+          {/* Large eyebrow number */}
+          <motion.div
+            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
+            viewport={{ once: true }} transition={{ duration: 1.2 }}
+            className="pt-16 sm:pt-20 select-none pointer-events-none"
+          >
+            <span className="font-display leading-none block"
+              style={{ fontSize: 'clamp(80px,16vw,180px)', color: 'rgba(199,105,79,0.08)', letterSpacing: '-4px' }}>
+              03
+            </span>
+          </motion.div>
+
+          {/* Top label */}
           <motion.span
-            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-xs uppercase tracking-[0.3em] text-ivory/40 font-medium"
+            initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.7 }}
+            className="block text-[10px] uppercase tracking-[0.35em] font-medium -mt-4 sm:-mt-8 lg:-mt-12 mb-10"
+            style={{ color: 'rgba(255,255,255,0.3)' }}
           >
             Commission an Original
           </motion.span>
-          <motion.h2
-            initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-6 text-3xl sm:text-4xl lg:text-6xl font-display text-ivory leading-tight"
-          >
-            Have a vision?<br />
-            <span className="italic text-gold">Let's create it together</span>
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2, duration: 0.8 }}
-            className="mt-8 text-base sm:text-lg text-ivory/60 max-w-xl mx-auto leading-relaxed"
-          >
-            Whether it's a beloved pet, a family portrait, or a completely original concept —
-            I'll work with you to create something truly personal and meaningful.
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-            className="mt-10"
-          >
-            <Link to="/commission"
-              className="inline-flex items-center px-10 py-4 bg-ivory text-charcoal text-sm uppercase tracking-[0.2em] font-medium rounded-full hover:bg-terracotta hover:text-ivory transition-all duration-300">
-              Start Your Commission
-            </Link>
-          </motion.div>
 
-          {/* Process Steps */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-            className="mt-20 grid grid-cols-2 sm:grid-cols-4 gap-8"
-          >
-            {[
-              { step: '01', title: 'Share Your Vision',    desc: 'Tell me about your idea and share reference images.' },
-              { step: '02', title: 'Get a Quote',          desc: "I'll review and provide a personalized estimate." },
-              { step: '03', title: 'Creation Begins',      desc: 'Watch your vision come to life on canvas.' },
-              { step: '04', title: 'Delivered with Love',  desc: 'Receive your artwork, beautifully packaged.' },
-            ].map((item) => (
-              <div key={item.step} className="px-1 sm:px-2">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-ivory/20 flex items-center justify-center mx-auto">
-                  <span className="text-[10px] sm:text-xs text-gold font-medium">{item.step}</span>
-                </div>
-                <h4 className="mt-4 text-xs sm:text-sm font-medium text-ivory">{item.title}</h4>
-                <p className="mt-2 text-[11px] sm:text-xs text-ivory/50 leading-relaxed">{item.desc}</p>
+          {/* Split — headline left, steps right */}
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 pb-8">
+
+            {/* Left — headline + CTA */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.95, ease: [0.16,1,0.3,1] }}
+            >
+              <h2 className="font-display text-white leading-[1.0] tracking-tight"
+                style={{ fontSize: 'clamp(2.6rem,6vw,5.5rem)' }}>
+                Have a<br/>
+                vision?<br/>
+                <em className="not-italic" style={{ color: '#C9A94E' }}>Let's create</em><br/>
+                <em className="not-italic" style={{ color: '#C9A94E' }}>it together</em>
+              </h2>
+              <p className="mt-7 text-sm sm:text-base leading-relaxed max-w-md"
+                style={{ color: 'rgba(255,255,255,0.52)' }}>
+                Whether it's a beloved pet, a family portrait, or a completely original concept —
+                I'll work with you to create something truly personal and meaningful.
+              </p>
+              <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <Link to="/commission"
+                  className="inline-flex items-center gap-3 px-8 py-4 text-[11px] uppercase tracking-[0.22em] font-medium transition-all duration-300 hover:-translate-y-[2px]"
+                  style={{ background: '#C7694F', color: 'white', borderRadius: 0 }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#a85540'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#C7694F'}
+                >
+                  Start Your Commission
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                  </svg>
+                </Link>
+                <Link to="/gallery"
+                  className="text-[11px] uppercase tracking-[0.22em] transition-colors duration-300"
+                  style={{ color: 'rgba(255,255,255,0.4)' }}
+                  onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.85)'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}
+                >
+                  View past work →
+                </Link>
               </div>
-            ))}
-          </motion.div>
+            </motion.div>
+
+            {/* Right — numbered process steps */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ delay: 0.2, duration: 0.95, ease: [0.16,1,0.3,1] }}
+              className="flex flex-col justify-center gap-0"
+            >
+              {[
+                { n: '01', title: 'Share Your Vision',   desc: 'Tell me about your idea and share reference images or a quick brief.' },
+                { n: '02', title: 'Get a Quote',         desc: "I'll review and send you a personalised estimate within 48 hours." },
+                { n: '03', title: 'Creation Begins',     desc: 'Watch your vision come to life — I share progress updates throughout.' },
+                { n: '04', title: 'Delivered with Love', desc: 'Your artwork arrives beautifully packaged, ready to hang.' },
+              ].map((step, i) => (
+                <motion.div
+                  key={step.n}
+                  initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }} transition={{ delay: 0.25 + i * 0.1, duration: 0.7 }}
+                  className="flex gap-6 py-5 border-b"
+                  style={{ borderColor: 'rgba(255,255,255,0.07)' }}
+                >
+                  <span className="font-display text-xs flex-shrink-0 mt-0.5" style={{ color: '#C9A94E', letterSpacing: 1 }}>{step.n}</span>
+                  <div>
+                    <h4 className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.88)' }}>{step.title}</h4>
+                    <p className="mt-1.5 text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.38)' }}>{step.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
         </div>
-      </motion.section>
+
+        {/* Bottom rule */}
+        <div className="w-full h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
+        <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 py-5 flex items-center justify-between">
+          <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: 'rgba(255,255,255,0.2)' }}>Strokes by Sakshi · Est. 2019</span>
+          <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: 'rgba(255,255,255,0.2)' }}>India</span>
+        </div>
+      </section>
 
       {/* ── Testimonials ── */}
-      <motion.section {...fadeUp} className="py-16 lg:py-24 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <span className="text-xs uppercase tracking-[0.3em] text-charcoal-muted font-medium">Kind Words</span>
-            <h2 className="mt-4 text-3xl sm:text-4xl font-display text-charcoal">What Collectors Say</h2>
-          </div>
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
-            {testimonials.map((t, i) => (
-              <motion.div
-                key={t.id}
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }} transition={{ delay: i * 0.15 }}
-                className="p-6 sm:p-8 rounded-2xl bg-cream/70"
-              >
-                <div className="flex gap-1 mb-4">
-                  {[...Array(t.rating)].map((_, j) => (
-                    <svg key={j} className="w-4 h-4 text-gold" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <p className="text-sm text-charcoal-muted leading-relaxed italic">"{t.text}"</p>
-                <div className="mt-6 pt-4 border-t border-border">
-                  <p className="text-sm font-medium text-charcoal">{t.name}</p>
-                  <p className="text-xs text-charcoal-muted">{t.type}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </motion.section>
+      <TestimonialsSection testimonials={testimonials} />
 
       {/* ── Instagram Gallery Strip ── */}
       <motion.section {...fadeUp} className="py-16 lg:py-24 px-4 sm:px-6 bg-cream/30">
