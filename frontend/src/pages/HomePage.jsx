@@ -176,10 +176,10 @@ export default function HomePage() {
           COMMISSION — Delassus-style: dark full-bleed, large number,
           side-by-side headline + process steps, accent CTA button
       ══════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden" style={{ background: '#0d0b08' }}>
+      <section className="relative overflow-hidden bg-cream/40 dark:bg-[#0d0b08]">
         {/* Subtle warm gradient wash */}
         <div className="absolute inset-0 pointer-events-none" aria-hidden="true"
-          style={{ background: 'radial-gradient(ellipse 80% 60% at 20% 50%, rgba(199,105,79,0.10) 0%, transparent 65%), radial-gradient(ellipse 50% 70% at 85% 80%, rgba(201,169,78,0.07) 0%, transparent 60%)' }} />
+          style={{ background: 'radial-gradient(ellipse 80% 60% at 20% 50%, rgba(199,105,79,0.07) 0%, transparent 65%), radial-gradient(ellipse 50% 70% at 85% 80%, rgba(201,169,78,0.05) 0%, transparent 60%)' }} />
 
         <div className="relative z-10 max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16">
 
@@ -189,8 +189,9 @@ export default function HomePage() {
             viewport={{ once: true }} transition={{ duration: 1.2 }}
             className="pt-16 sm:pt-20 select-none pointer-events-none"
           >
-            <span className="font-display leading-none block"
-              style={{ fontSize: 'clamp(80px,16vw,180px)', color: 'rgba(199,105,79,0.08)', letterSpacing: '-4px' }}>
+            <span
+              className="font-display leading-none block select-none pointer-events-none"
+              style={{ fontSize: 'clamp(80px,16vw,180px)', letterSpacing: '-4px', color: 'rgba(199,105,79,0.08)' }}>
               03
             </span>
           </motion.div>
@@ -199,8 +200,7 @@ export default function HomePage() {
           <motion.span
             initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }} transition={{ duration: 0.7 }}
-            className="block text-[10px] uppercase tracking-[0.35em] font-medium -mt-4 sm:-mt-8 lg:-mt-12 mb-10"
-            style={{ color: 'rgba(255,255,255,0.3)' }}
+            className="block text-[10px] uppercase tracking-[0.35em] font-medium -mt-4 sm:-mt-8 lg:-mt-12 mb-10 text-charcoal-muted dark:text-white/30"
           >
             Commission an Original
           </motion.span>
@@ -214,15 +214,14 @@ export default function HomePage() {
               viewport={{ once: true, margin: '-80px' }}
               transition={{ duration: 0.95, ease: [0.16,1,0.3,1] }}
             >
-              <h2 className="font-display text-white leading-[1.0] tracking-tight"
+              <h2 className="font-display text-charcoal dark:text-white leading-[1.0] tracking-tight"
                 style={{ fontSize: 'clamp(2.6rem,6vw,5.5rem)' }}>
                 Have a<br/>
                 vision?<br/>
-                <em className="not-italic" style={{ color: '#C9A94E' }}>Let's create</em><br/>
-                <em className="not-italic" style={{ color: '#C9A94E' }}>it together</em>
+                <em className="not-italic text-gold">Let's create</em><br/>
+                <em className="not-italic text-gold">it together</em>
               </h2>
-              <p className="mt-7 text-sm sm:text-base leading-relaxed max-w-md"
-                style={{ color: 'rgba(255,255,255,0.52)' }}>
+              <p className="mt-7 text-sm sm:text-base leading-relaxed max-w-md text-charcoal-muted dark:text-white/50">
                 Whether it's a beloved pet, a family portrait, or a completely original concept —
                 I'll work with you to create something truly personal and meaningful.
               </p>
@@ -239,10 +238,7 @@ export default function HomePage() {
                   </svg>
                 </Link>
                 <Link to="/gallery"
-                  className="text-[11px] uppercase tracking-[0.22em] transition-colors duration-300"
-                  style={{ color: 'rgba(255,255,255,0.4)' }}
-                  onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.85)'}
-                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}
+                  className="text-[11px] uppercase tracking-[0.22em] transition-colors duration-300 text-charcoal/50 dark:text-white/40 hover:text-charcoal dark:hover:text-white/85"
                 >
                   View past work →
                 </Link>
@@ -266,13 +262,12 @@ export default function HomePage() {
                   key={step.n}
                   initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }} transition={{ delay: 0.25 + i * 0.1, duration: 0.7 }}
-                  className="flex gap-6 py-5 border-b"
-                  style={{ borderColor: 'rgba(255,255,255,0.07)' }}
+                  className="flex gap-6 py-5 border-b border-charcoal/10 dark:border-white/7"
                 >
-                  <span className="font-display text-xs flex-shrink-0 mt-0.5" style={{ color: '#C9A94E', letterSpacing: 1 }}>{step.n}</span>
+                  <span className="font-display text-xs flex-shrink-0 mt-0.5 text-gold" style={{ letterSpacing: 1 }}>{step.n}</span>
                   <div>
-                    <h4 className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.88)' }}>{step.title}</h4>
-                    <p className="mt-1.5 text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.38)' }}>{step.desc}</p>
+                    <h4 className="text-sm font-medium text-charcoal dark:text-white/88">{step.title}</h4>
+                    <p className="mt-1.5 text-xs leading-relaxed text-charcoal-muted dark:text-white/40">{step.desc}</p>
                   </div>
                 </motion.div>
               ))}
@@ -281,10 +276,10 @@ export default function HomePage() {
         </div>
 
         {/* Bottom rule */}
-        <div className="w-full h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
+        <div className="w-full h-px bg-charcoal/8 dark:bg-white/6" />
         <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 py-5 flex items-center justify-between">
-          <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: 'rgba(255,255,255,0.2)' }}>Strokes by Sakshi · Est. 2019</span>
-          <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: 'rgba(255,255,255,0.2)' }}>India</span>
+          <span className="text-[10px] uppercase tracking-[0.3em] text-charcoal-muted dark:text-white/20">Strokes by Sakshi · Est. 2019</span>
+          <span className="text-[10px] uppercase tracking-[0.3em] text-charcoal-muted dark:text-white/20">India</span>
         </div>
       </section>
 
@@ -296,58 +291,36 @@ export default function HomePage() {
           Section 05: large @handle background text, asymmetric grid,
           hover reveals with scale + overlay, bottom follow CTA
       ══════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden bg-[#0d0b08]">
-        {/* Giant background handle — purely decorative */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 flex items-center justify-center select-none pointer-events-none overflow-hidden"
-        >
-          <span
-            className="font-display whitespace-nowrap"
-            style={{
-              fontSize: 'clamp(80px,18vw,220px)',
-              color: 'rgba(199,105,79,0.04)',
-              letterSpacing: '-4px',
-              fontWeight: 300,
-              lineHeight: 1,
-            }}
-          >
+      <section className="relative overflow-hidden bg-cream/30 dark:bg-[#0d0b08]">
+        {/* Giant background handle */}
+        <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center select-none pointer-events-none overflow-hidden">
+          <span className="font-display whitespace-nowrap"
+            style={{ fontSize:'clamp(80px,18vw,220px)', color:'rgba(199,105,79,0.04)', letterSpacing:'-4px', fontWeight:300, lineHeight:1 }}>
             @strokesbysakshi
           </span>
         </div>
 
         <div className="relative z-10 max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16">
           {/* Section number */}
-          <motion.div
-            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
-            viewport={{ once: true }} transition={{ duration: 1.2 }}
-            className="pt-16 sm:pt-20 select-none pointer-events-none"
-          >
-            <span className="font-display leading-none block"
-              style={{ fontSize: 'clamp(80px,16vw,180px)', color: 'rgba(199,105,79,0.06)', letterSpacing: '-4px' }}>
-              05
-            </span>
+          <motion.div initial={{ opacity:0 }} whileInView={{ opacity:1 }} viewport={{ once:true }} transition={{ duration:1.2 }}
+            className="pt-16 sm:pt-20 select-none pointer-events-none">
+            <span className="font-display leading-none block text-terracotta/8 dark:text-[rgba(199,105,79,0.06)]"
+              style={{ fontSize:'clamp(80px,16vw,180px)', letterSpacing:'-4px' }}>05</span>
           </motion.div>
 
           {/* Header row */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-4 sm:-mt-8 lg:-mt-12 mb-10 sm:mb-14">
             <div>
-              <span className="text-[10px] uppercase tracking-[0.35em] font-medium" style={{ color: 'rgba(255,255,255,0.3)' }}>
+              <span className="text-[10px] uppercase tracking-[0.35em] font-medium text-charcoal-muted dark:text-white/30">
                 05 · Follow the Journey
               </span>
-              <h2 className="mt-3 font-display text-white leading-tight"
-                style={{ fontSize: 'clamp(1.8rem,4.5vw,3.5rem)' }}>
-                Behind the <em className="not-italic" style={{ color: '#C7694F' }}>Canvas</em>
+              <h2 className="mt-3 font-display text-charcoal dark:text-white leading-tight"
+                style={{ fontSize:'clamp(1.8rem,4.5vw,3.5rem)' }}>
+                Behind the <em className="not-italic text-terracotta">Canvas</em>
               </h2>
             </div>
-            <a
-              href="https://instagram.com/strokesbysakshi"
-              target="_blank" rel="noopener noreferrer"
-              className="self-start sm:self-end inline-flex items-center gap-2.5 text-[11px] uppercase tracking-[0.22em] transition-colors duration-300"
-              style={{ color: 'rgba(255,255,255,0.45)' }}
-              onMouseEnter={e => e.currentTarget.style.color = 'white'}
-              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.45)'}
-            >
+            <a href="https://instagram.com/strokesbysakshi" target="_blank" rel="noopener noreferrer"
+              className="self-start sm:self-end inline-flex items-center gap-2.5 text-[11px] uppercase tracking-[0.22em] transition-colors duration-300 text-charcoal-muted hover:text-charcoal dark:text-white/45 dark:hover:text-white">
               <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
                 <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" strokeWidth="1.5"/>
                 <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.5"/>
@@ -357,46 +330,36 @@ export default function HomePage() {
             </a>
           </div>
 
-          {/* Asymmetric grid — Delassus product grid style */}
+          {/* Asymmetric grid */}
           {(() => {
             const items = featuredProducts.length > 0
               ? featuredProducts.slice(0, 6)
               : [...Array(6)].map((_, i) => ({ _placeholder: i }));
             return (
-              <div className="grid grid-cols-6 grid-rows-2 gap-2 sm:gap-3" style={{ height: 'clamp(320px, 55vw, 620px)' }}>
-                {/* Large left tile — spans 3 cols, 2 rows */}
+              <div className="grid grid-cols-6 grid-rows-2 gap-2 sm:gap-3" style={{ height:'clamp(320px,55vw,620px)' }}>
                 {[
-                  { colSpan: 'col-span-3 row-span-2', idx: 0 },
-                  { colSpan: 'col-span-2 row-span-1', idx: 1 },
-                  { colSpan: 'col-span-1 row-span-1', idx: 2 },
-                  { colSpan: 'col-span-1 row-span-1', idx: 3 },
-                  { colSpan: 'col-span-2 row-span-1', idx: 4 },
-                  /* hidden on mobile — only 4 tiles shown xs */
+                  { colSpan:'col-span-3 row-span-2', idx:0 },
+                  { colSpan:'col-span-2 row-span-1', idx:1 },
+                  { colSpan:'col-span-1 row-span-1', idx:2 },
+                  { colSpan:'col-span-1 row-span-1', idx:3 },
+                  { colSpan:'col-span-2 row-span-1', idx:4 },
                 ].map(({ colSpan, idx }) => {
                   const item = items[idx];
-                  const imgUrl = item?.primary_image?.image_url
-                    || item?.thumbnail
-                    || `https://picsum.photos/seed/${80 + idx}/600/600`;
+                  const imgUrl = item?.primary_image?.image_url || item?.thumbnail
+                    || `https://picsum.photos/seed/${80+idx}/600/600`;
                   return (
-                    <motion.a
-                      key={idx}
-                      href="https://instagram.com/strokesbysakshi"
+                    <motion.a key={idx} href="https://instagram.com/strokesbysakshi"
                       target="_blank" rel="noopener noreferrer"
                       className={`${colSpan} relative overflow-hidden group ${idx >= 4 ? 'hidden sm:block' : ''}`}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, margin: '-60px' }}
-                      transition={{ delay: idx * 0.07, duration: 0.7, ease: [0.16,1,0.3,1] }}
+                      initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }}
+                      viewport={{ once:true, margin:'-60px' }}
+                      transition={{ delay:idx*0.07, duration:0.7, ease:[0.16,1,0.3,1] }}
                     >
-                      <img
-                        src={imgUrl}
-                        alt={item?.name || `Artwork ${idx + 1}`}
+                      <img src={imgUrl} alt={item?.name || `Artwork ${idx+1}`}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        loading="lazy"
-                      />
-                      {/* Hover overlay */}
-                      <div className="absolute inset-0 flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-400"
-                        style={{ background: 'linear-gradient(to top, rgba(13,11,8,0.82) 0%, transparent 60%)' }}>
+                        loading="lazy" />
+                      <div className="absolute inset-0 flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        style={{ background:'linear-gradient(to top, rgba(13,11,8,0.82) 0%, transparent 60%)' }}>
                         <div className="flex items-center gap-2">
                           <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="1.5">
                             <rect x="2" y="2" width="20" height="20" rx="5"/>
@@ -415,16 +378,14 @@ export default function HomePage() {
 
           {/* Bottom CTA row */}
           <div className="mt-8 sm:mt-10 pb-16 sm:pb-20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-            <p className="text-xs sm:text-sm leading-relaxed max-w-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            <p className="text-xs sm:text-sm leading-relaxed max-w-sm text-charcoal-muted dark:text-white/35">
               Follow the process — from blank canvas to finished piece. Updates, behind-the-scenes and new drops.
             </p>
-            <a
-              href="https://instagram.com/strokesbysakshi"
-              target="_blank" rel="noopener noreferrer"
-              className="flex-shrink-0 inline-flex items-center gap-3 px-8 py-3.5 text-[11px] uppercase tracking-[0.22em] font-medium transition-all duration-300"
-              style={{ border: '1px solid rgba(255,255,255,0.25)', color: 'white' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#0d0b08'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'white'; }}
+            <a href="https://instagram.com/strokesbysakshi" target="_blank" rel="noopener noreferrer"
+              className="flex-shrink-0 inline-flex items-center gap-3 px-8 py-3.5 text-[11px] uppercase tracking-[0.22em] font-medium transition-all duration-300 text-charcoal dark:text-white"
+              style={{ border:'1px solid rgba(44,44,44,0.25)' }}
+              onMouseEnter={e => { e.currentTarget.style.background='#2C2C2C'; e.currentTarget.style.color='white'; e.currentTarget.style.borderColor='transparent'; }}
+              onMouseLeave={e => { e.currentTarget.style.background='transparent'; e.currentTarget.style.color=''; e.currentTarget.style.borderColor='rgba(44,44,44,0.25)'; }}
             >
               Follow on Instagram
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -434,8 +395,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Bottom rule */}
-        <div className="w-full h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
+        <div className="w-full h-px bg-charcoal/8 dark:bg-white/6" />
       </section>
 
       {/* ══════════════════════════════════════════════════════════
