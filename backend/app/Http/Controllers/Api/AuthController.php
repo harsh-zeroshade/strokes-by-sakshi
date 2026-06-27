@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Str;
+use App\Services\CloudinaryService;
 
 class AuthController extends Controller
 {
@@ -289,7 +290,7 @@ class AuthController extends Controller
         return response()->json($user);
     }
 
-    // ── Existing: Upload Avatar ─────────────────────────────────────────
+    // ── Upload Avatar via Cloudinary ────────────────────────────────────
 
     public function uploadAvatar(Request $request): JsonResponse
     {
@@ -299,13 +300,25 @@ class AuthController extends Controller
 
         $user = $request->user();
 
-        if ($user->avatar_url && str_contains($user->avatar_url, '/storage/avatars/')) {
-            $oldPath = str_replace('/storage/', '', parse_url($user->avatar_url, PHP_URL_PATH));
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+        // Delete old Cloudinary avatar if it exists
+        if ($user->avatar_url && str_contains($user->avatar_url, 'cloudinary.com')) {
+            try {
+                $cloudinary = new CloudinaryService();
+                $publicId = $cloudinary->getPublicId($user->avatar_url);
+                if ($publicId) {
+                    $cloudinary->destroy($publicId);
+                }
+            } catch (\Exception $e) {
+                // Silently skip — old avatar deletion is best-effort
+            }
         }
 
-        $path      = $request->file('avatar')->store('avatars', 'public');
-        $avatarUrl = \Illuminate\Support\Facades\Storage::url($path);
+        // Upload new avatar to Cloudinary
+        $cloudinary = new CloudinaryService();
+        $avatarUrl = $cloudinary->upload(
+            $request->file('avatar'),
+            'strokes-by-sakshi/avatars/' . $user->id
+        );
 
         $user->update(['avatar_url' => $avatarUrl]);
 

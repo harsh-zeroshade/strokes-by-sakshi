@@ -14,9 +14,10 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Normalize avatar URLs: if path starts with /storage, prepend STORAGE_URL
+  // Normalize avatar URLs — Cloudinary URLs are always full https://
   const normalizeUser = (userData) => {
     if (!userData) return userData;
+    // If it's a local storage path (legacy), prepend STORAGE_URL
     if (userData.avatar_url && !userData.avatar_url.startsWith('http') && userData.avatar_url.startsWith('/storage')) {
       return { ...userData, avatar_url: `${STORAGE_URL}${userData.avatar_url}` };
     }

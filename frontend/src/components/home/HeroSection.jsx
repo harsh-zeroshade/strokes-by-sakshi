@@ -473,11 +473,16 @@ export default function HeroSection() {
             <div style={{ position: 'relative' }}>
               {user ? (
                 <button onClick={() => setDropdownOpen(p => !p)} aria-label="Account"
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 'clamp(4px, 1vw, 8px)', color: 'rgba(255,255,255,0.75)', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
-                  onMouseEnter={e => e.currentTarget.style.color = 'white'}
-                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.75)'}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 'clamp(2px, 0.5vw, 4px)', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
                 >
-                  <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                  {user.avatar_url ? (
+                    <img src={user.avatar_url} alt={user.name}
+                      style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '1.5px solid rgba(255,255,255,0.25)' }} />
+                  ) : (
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, color: 'white', background: `hsl(${(user.id||0)*47+10},42%,52%)` }}>
+                      {user.name?.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase() || '?'}
+                    </div>
+                  )}
                 </button>
               ) : (
                 <Link to="/login" aria-label="Login"
@@ -488,43 +493,85 @@ export default function HeroSection() {
                   <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 </Link>
               )}
-              {/* Account dropdown */}
+              {/* Account dropdown — full screen overlay */}
               <AnimatePresence>
                 {dropdownOpen && user && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 6, scale: 0.97 }}
-                    transition={{ duration: 0.18 }}
-                    style={{ position: 'absolute', right: 0, top: '100%', marginTop: 8, width: 220, background: 'rgba(20,18,14,0.96)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 16, padding: '8px 0', zIndex: 200, boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}
-                  >
-                    <div style={{ padding: '10px 16px 10px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: 4 }}>
-                      <p style={{ fontSize: 13, fontWeight: 500, color: 'white', fontFamily: "'Inter', sans-serif" }}>{user.name}</p>
-                      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', fontFamily: "'Inter', sans-serif", marginTop: 2 }}>{user.email}</p>
-                    </div>
-                    {[
-                      { to: '/account',               label: 'My Profile'    },
-                      { to: '/account/orders',        label: 'My Orders'     },
-                      { to: '/account/custom-orders', label: 'Custom Orders' },
-                      { to: '/account/wishlist',      label: 'Wishlist'      },
-                    ].map(item => (
-                      <Link key={item.to} to={item.to} onClick={() => setDropdownOpen(false)}
-                        style={{ display: 'block', padding: '9px 16px', fontSize: 13, color: 'rgba(255,255,255,0.65)', textDecoration: 'none', fontFamily: "'Inter', sans-serif", transition: 'color 0.15s' }}
-                        onMouseEnter={e => e.currentTarget.style.color = 'white'}
-                        onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.65)'}
-                      >{item.label}</Link>
-                    ))}
-                    {isAdmin && (
-                      <Link to="/admin" onClick={() => setDropdownOpen(false)}
-                        style={{ display: 'block', padding: '9px 16px', fontSize: 13, color: '#E09A85', textDecoration: 'none', fontFamily: "'Inter', sans-serif", borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 4 }}>
-                        Admin Panel
-                      </Link>
-                    )}
-                    <button onClick={() => { logout(); setDropdownOpen(false); }}
-                      style={{ width: '100%', textAlign: 'left', padding: '9px 16px', fontSize: 13, color: 'rgba(255,255,255,0.5)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif", borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 4 }}>
-                      Sign Out
-                    </button>
-                  </motion.div>
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      transition={{ duration: 0.35 }}
+                      style={{ position: 'fixed', inset: 0, zIndex: 800, background: 'rgba(10,9,7,0.55)', backdropFilter: 'blur(4px)' }}
+                      onClick={() => setDropdownOpen(false)}
+                    />
+                    <motion.div
+                      initial={{ clipPath: 'inset(0 0 100% 0)' }}
+                      animate={{ clipPath: 'inset(0 0 0% 0)' }}
+                      exit={{ clipPath: 'inset(0 0 100% 0)' }}
+                      transition={{ duration: 0.6, ease: [0.77, 0, 0.18, 1] }}
+                      style={{ position: 'fixed', inset: 0, zIndex: 850, display: 'flex', flexDirection: 'column', background: '#0d0b08' }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: 'clamp(16px, 3vw, 28px) clamp(12px, 3vw, 32px) 0' }}>
+                        <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(18px, 2.5vw, 22px)', fontWeight: 400, color: 'white', letterSpacing: '-0.3px', lineHeight: 1 }}>
+                          <div>{user.name}</div>
+                          <span style={{ display: 'block', fontSize: 'clamp(11px, 1.5vw, 13px)', letterSpacing: 2, opacity: 0.45, fontFamily: "'Inter', sans-serif", fontWeight: 300, marginTop: 2 }}>{user.email}</span>
+                        </div>
+                        <button onClick={() => setDropdownOpen(false)}
+                          style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 'clamp(10px, 1.2vw, 11px)', letterSpacing: 2, textTransform: 'uppercase', fontFamily: "'Inter', sans-serif" }}
+                          onMouseEnter={e => e.currentTarget.style.color = 'white'}
+                          onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
+                        >
+                          Close <span style={{ fontSize: 17, lineHeight: 1 }}>✕</span>
+                        </button>
+                      </div>
+                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '0 clamp(24px, 6vw, 80px)', overflow: 'hidden' }}>
+                        <nav style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                          {[
+                            { to: '/account',               label: 'My Profile'    },
+                            { to: '/account/orders',        label: 'My Orders'     },
+                            { to: '/account/custom-orders', label: 'Custom Orders' },
+                            { to: '/account/wishlist',      label: 'Wishlist'      },
+                            ...(isAdmin ? [{ to: '/admin', label: 'Admin Panel' }] : []),
+                          ].map((item, i) => (
+                            <motion.div key={item.to}
+                              initial={{ opacity: 0, y: 40 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.1 + i * 0.07, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                            >
+                              <Link to={item.to} onClick={() => setDropdownOpen(false)}
+                                style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(2rem, 5vw, 4rem)', fontWeight: 300, color: 'rgba(255,255,255,0.18)', textDecoration: 'none', letterSpacing: '-1.5px', lineHeight: 1.15, display: 'flex', alignItems: 'baseline', gap: 16, padding: '12px 0', transition: 'color 0.25s ease' }}
+                                onMouseEnter={e => e.currentTarget.style.color = 'white'}
+                                onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.18)'}
+                              >
+                                {item.label}
+                              </Link>
+                            </motion.div>
+                          ))}
+                        </nav>
+                      </div>
+                      <motion.div
+                        initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5, duration: 0.5 }}
+                        style={{ padding: '0 clamp(24px, 6vw, 80px) clamp(24px, 4vw, 44px)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}
+                      >
+                        <button onClick={() => { logout(); setDropdownOpen(false); }}
+                          style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 11, cursor: 'pointer', fontFamily: "'Inter', sans-serif", textAlign: 'left', letterSpacing: 1, textTransform: 'uppercase', padding: 0 }}>
+                          Sign Out
+                        </button>
+                        <div style={{ display: 'flex', gap: 16 }}>
+                          {[
+                            { label: 'Instagram', href: 'https://instagram.com/strokesbysakshi' },
+                            { label: 'WhatsApp',  href: 'https://wa.me/1234567890' },
+                          ].map(s => (
+                            <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
+                              style={{ color: 'rgba(255,255,255,0.28)', fontSize: 11, letterSpacing: 1, textDecoration: 'none', fontFamily: "'Inter', sans-serif", textTransform: 'uppercase', transition: 'color 0.2s' }}
+                              onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}
+                              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.28)'}
+                            >{s.label}</a>
+                          ))}
+                        </div>
+                      </motion.div>
+                    </motion.div>
+                  </>
                 )}
               </AnimatePresence>
             </div>

@@ -145,8 +145,15 @@ export default function Navbar() {
             {/* Account */}
             <div className="relative">
               {user ? (
-                <button onClick={() => setDropdownOpen(p=>!p)} aria-label="Account" className={iconBtn}>
-                  <UserIcon />
+                <button onClick={() => setDropdownOpen(p=>!p)} aria-label="Account" className="p-1 rounded-lg hover:bg-charcoal/5 dark:hover:bg-white/5 transition-all duration-200">
+                  {user.avatar_url ? (
+                    <img src={user.avatar_url} alt={user.name} className="w-8 h-8 rounded-full object-cover ring-1 ring-charcoal/10 dark:ring-white/10" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white"
+                      style={{ background: `hsl(${(user.id||0)*47+10},42%,52%)` }}>
+                      {user.name?.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase() || '?'}
+                    </div>
+                  )}
                 </button>
               ) : (
                 <Link to="/login" aria-label="Sign in" className={`${iconBtn} inline-flex items-center justify-center`}>
