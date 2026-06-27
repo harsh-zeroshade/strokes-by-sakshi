@@ -16,7 +16,8 @@ const GoogleIcon = () => (
 export default function LoginPage() {
   const { user, isAdmin, loading: authLoading, login, sendOtp, verifyOtp, googleLogin } = useAuth();
   const navigate = useNavigate();
-  const [step, setStep] = useState('form'); // form | otp
+  const [mode, setMode] = useState('password'); // 'password' | 'otp'
+  const [step, setStep] = useState('form');     // 'form' | 'otp'
   const [form, setForm]     = useState({ email: '', password: '' });
   const [error, setError]   = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -38,12 +39,27 @@ export default function LoginPage() {
     );
   }
 
-  const handleSubmit = async (e) => {
+  // ── Password Login ──
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSubmitting(true);
     try {
-      // First send OTP
+      const data = await login(form);
+      navigate(data.user?.is_admin ? '/admin' : '/', { replace: true });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Invalid email or password.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // ── OTP: Send code ──
+  const handleOtpSend = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSubmitting(true);
+    try {
       await sendOtp({ email: form.email, type: 'login' });
       setStep('otp');
     } catch (err) {
@@ -53,6 +69,7 @@ export default function LoginPage() {
     }
   };
 
+  // ── OTP: Verify code ──
   const handleOtpVerify = async (code) => {
     setError('');
     setSubmitting(true);
@@ -74,13 +91,12 @@ export default function LoginPage() {
     setStep('form');
   };
 
+  // ── Google Login ──
   const handleGoogleLogin = async () => {
     setError('');
     setGoogleLoading(true);
     try {
       await googleLogin();
-      // AuthContext will set the user via the popup message listener
-      // We navigate after a brief delay to allow state to update
       setTimeout(() => {
         navigate('/', { replace: true });
       }, 500);
@@ -92,6 +108,8 @@ export default function LoginPage() {
       setGoogleLoading(false);
     }
   };
+
+  const isOtpFlow = mode === 'otp' || step === 'otp';
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 pt-24">
@@ -118,7 +136,7 @@ export default function LoginPage() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25 }}
             >
-              <div className="text-center mb-10">
+              <div className="text-center mb-8">
                 <h1 className="text-3xl font-display text-charcoal dark:text-[#F0EDE8]">Welcome Back</h1>
                 <p className="mt-2 text-charcoal-muted dark:text-[#9A9590]">Sign in to your account</p>
               </div>
@@ -127,28 +145,90 @@ export default function LoginPage() {
                 <div className="p-3 bg-error/10 border border-error/20 rounded-lg text-sm text-error mb-5">{error}</div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div>
-                  <label className="block text-sm text-charcoal-muted dark:text-[#9A9590] mb-1">Email</label>
-                  <input
-                    type="email"
-                    required
-                    value={form.email}
-                    onChange={e => setForm({ ...form, email: e.target.value })}
-                    className="w-full px-4 py-3 bg-transparent border border-border dark:border-white/10 rounded-lg text-charcoal dark:text-[#F0EDE8] focus:outline-none focus:border-charcoal-muted transition-colors"
-                    placeholder="your@email.com"
-                  />
-                </div>
+              {/* ── Mode Tabs ── */}
+              <div className="flex mb-6 bg-cream dark:bg-[#252219] rounded-xl p-1">
                 <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full py-3 bg-charcoal dark:bg-[#F0EDE8] text-ivory dark:text-[#1A1814] text-sm uppercase tracking-wider rounded-lg hover:bg-charcoal-light dark:hover:bg-white transition-colors disabled:opacity-50"
+                  onClick={() => { setMode('password'); setError(''); }}
+                  className={`flex-1 py-2.5 text-xs uppercase tracking-[0.2em] font-medium rounded-lg transition-all duration-200 ${
+                    mode === 'password'
+                      ? 'bg-ivory dark:bg-[#1e1c18] text-charcoal dark:text-[#F0EDE8] shadow-sm'
+                      : 'text-charcoal-muted dark:text-[#9A9590] hover:text-charcoal dark:hover:text-[#F0EDE8]'
+                  }`}
                 >
-                  {submitting ? 'Sending Code...' : 'Continue with Email'}
+                  Password
                 </button>
-              </form>
+                <button
+                  onClick={() => { setMode('otp'); setError(''); }}
+                  className={`flex-1 py-2.5 text-xs uppercase tracking-[0.2em] font-medium rounded-lg transition-all duration-200 ${
+                    mode === 'otp'
+                      ? 'bg-ivory dark:bg-[#1e1c18] text-charcoal dark:text-[#F0EDE8] shadow-sm'
+                      : 'text-charcoal-muted dark:text-[#9A9590] hover:text-charcoal dark:hover:text-[#F0EDE8]'
+                  }`}
+                >
+                  OTP
+                </button>
+              </div>
 
-              {/* Divider */}
+              {/* ── Password Form ── */}
+              {mode === 'password' && (
+                <form onSubmit={handlePasswordSubmit} className="space-y-5">
+                  <div>
+                    <label className="block text-sm text-charcoal-muted dark:text-[#9A9590] mb-1">Email</label>
+                    <input
+                      type="email"
+                      required
+                      value={form.email}
+                      onChange={e => setForm({ ...form, email: e.target.value })}
+                      className="w-full px-4 py-3 bg-transparent border border-border dark:border-white/10 rounded-lg text-charcoal dark:text-[#F0EDE8] focus:outline-none focus:border-charcoal-muted transition-colors"
+                      placeholder="your@email.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-charcoal-muted dark:text-[#9A9590] mb-1">Password</label>
+                    <input
+                      type="password"
+                      required
+                      value={form.password}
+                      onChange={e => setForm({ ...form, password: e.target.value })}
+                      className="w-full px-4 py-3 bg-transparent border border-border dark:border-white/10 rounded-lg text-charcoal dark:text-[#F0EDE8] focus:outline-none focus:border-charcoal-muted transition-colors"
+                      placeholder="••••••••"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full py-3 bg-charcoal dark:bg-[#F0EDE8] text-ivory dark:text-[#1A1814] text-sm uppercase tracking-wider rounded-lg hover:bg-charcoal-light dark:hover:bg-white transition-colors disabled:opacity-50"
+                  >
+                    {submitting ? 'Signing in...' : 'Sign In'}
+                  </button>
+                </form>
+              )}
+
+              {/* ── OTP Form ── */}
+              {mode === 'otp' && (
+                <form onSubmit={handleOtpSend} className="space-y-5">
+                  <div>
+                    <label className="block text-sm text-charcoal-muted dark:text-[#9A9590] mb-1">Email</label>
+                    <input
+                      type="email"
+                      required
+                      value={form.email}
+                      onChange={e => setForm({ ...form, email: e.target.value })}
+                      className="w-full px-4 py-3 bg-transparent border border-border dark:border-white/10 rounded-lg text-charcoal dark:text-[#F0EDE8] focus:outline-none focus:border-charcoal-muted transition-colors"
+                      placeholder="your@email.com"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full py-3 bg-charcoal dark:bg-[#F0EDE8] text-ivory dark:text-[#1A1814] text-sm uppercase tracking-wider rounded-lg hover:bg-charcoal-light dark:hover:bg-white transition-colors disabled:opacity-50"
+                  >
+                    {submitting ? 'Sending Code...' : 'Send Verification Code'}
+                  </button>
+                </form>
+              )}
+
+              {/* ── Divider ── */}
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-border dark:border-white/10" />
@@ -158,7 +238,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Google Sign-In */}
+              {/* ── Google Sign-In ── */}
               <button
                 onClick={handleGoogleLogin}
                 disabled={googleLoading}

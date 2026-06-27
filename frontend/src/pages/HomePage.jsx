@@ -62,45 +62,45 @@ export default function HomePage() {
       <div className="relative bg-ivory dark:bg-[#1A1814]" style={{ zIndex: 10, isolation: 'isolate' }}>
 
       {/* ══════════════════════════════════════════════════════════
-          OUR PHILOSOPHY — Delassus-style: full-bleed, large number,
+          OUR PHILOSOPHY — full-bleed, large number,
           split text left / quote right, thin rule dividers
       ══════════════════════════════════════════════════════════ */}
       <section className="relative overflow-hidden bg-ivory dark:bg-[#1A1814]">
         {/* Top rule */}
         <div className="w-full h-px bg-charcoal/8 dark:bg-white/8" />
 
-        <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16">
-          {/* Large eyebrow number — Delassus aesthetic */}
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-16">
+          {/* Large eyebrow number */}
           <motion.div
             initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
             viewport={{ once: true }} transition={{ duration: 1.2 }}
-            className="pt-16 sm:pt-20 select-none pointer-events-none"
+            className="pt-12 sm:pt-16 lg:pt-20 select-none pointer-events-none"
           >
-            <span className="font-display text-[clamp(80px,16vw,180px)] font-300 leading-none"
+            <span className="font-display text-[clamp(60px,16vw,180px)] font-300 leading-none"
               style={{ color: 'rgba(199,105,79,0.08)', letterSpacing: '-4px', display: 'block' }}>
               01
             </span>
           </motion.div>
 
           {/* Split layout */}
-          <div className="grid lg:grid-cols-2 gap-0 -mt-8 sm:-mt-12 lg:-mt-16 pb-20 sm:pb-28">
+          <div className="grid lg:grid-cols-2 gap-0 -mt-6 sm:-mt-8 lg:-mt-16 pb-16 sm:pb-20 lg:pb-28">
             {/* Left — big headline */}
             <motion.div
               initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-80px' }}
               transition={{ duration: 0.9, ease: [0.16,1,0.3,1] }}
-              className="flex flex-col justify-end pr-0 lg:pr-16 pb-0 lg:pb-0"
+              className="flex flex-col justify-end pr-0 lg:pr-16 pb-6 lg:pb-0"
             >
-              <span className="text-[10px] uppercase tracking-[0.35em] text-charcoal-muted dark:text-[#9A9590] font-medium mb-5">
+              <span className="text-[10px] uppercase tracking-[0.35em] text-charcoal-muted dark:text-[#9A9590] font-medium mb-4 sm:mb-5">
                 Our Philosophy
               </span>
               <h2 className="font-display text-charcoal dark:text-[#F0EDE8] leading-[1.0] tracking-tight"
-                style={{ fontSize: 'clamp(2.8rem,6.5vw,6rem)' }}>
+                style={{ fontSize: 'clamp(2.2rem, 6.5vw, 6rem)' }}>
                 Every piece<br/>
                 of art<br/>
                 <em className="not-italic text-terracotta">tells a story</em>
               </h2>
-              <div className="mt-8 h-px w-12 bg-terracotta/40" />
+              <div className="mt-6 sm:mt-8 h-px w-12 bg-terracotta/40" />
             </motion.div>
 
             {/* Right — body copy + stats */}
@@ -108,33 +108,33 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-80px' }}
               transition={{ delay: 0.18, duration: 0.9, ease: [0.16,1,0.3,1] }}
-              className="flex flex-col justify-end pt-10 lg:pt-0 lg:pl-4 lg:border-l border-charcoal/10 dark:border-white/8"
+              className="flex flex-col justify-end pt-6 sm:pt-10 lg:pt-0 lg:pl-4 lg:border-l border-charcoal/10 dark:border-white/8"
             >
-              <p className="text-base sm:text-lg text-charcoal-muted dark:text-[#9A9590] leading-relaxed max-w-prose">
+              <p className="text-sm sm:text-base lg:text-lg text-charcoal-muted dark:text-[#9A9590] leading-relaxed max-w-prose">
                 At Strokes by Sakshi, art is more than decoration — it's an emotional archive.
                 Each portrait, landscape, and abstract expression carries the weight of human
                 experience, transformed into visual poetry on canvas.
               </p>
-              <p className="mt-5 text-sm text-charcoal-muted/70 dark:text-[#9A9590]/70 leading-relaxed max-w-prose">
+              <p className="mt-4 sm:mt-5 text-xs sm:text-sm text-charcoal-muted/70 dark:text-[#9A9590]/70 leading-relaxed max-w-prose">
                 Every piece begins with a conversation. I listen to what matters to you —
                 a face, a place, a feeling — and I paint it so it lasts a lifetime.
               </p>
 
               {/* Stat row */}
-              <div className="mt-10 flex items-center gap-10 sm:gap-14">
+              <div className="mt-8 sm:mt-10 flex items-center justify-between sm:justify-start gap-6 sm:gap-10 lg:gap-14">
                 {[
                   { v: '200+', l: 'Original works' },
                   { v: '98%',  l: 'Satisfied collectors' },
                   { v: '6+',   l: 'Years creating' },
                 ].map(({ v, l }) => (
                   <div key={l}>
-                    <p className="font-display text-2xl sm:text-3xl text-charcoal dark:text-[#F0EDE8] leading-none">{v}</p>
-                    <p className="mt-1.5 text-[10px] uppercase tracking-[0.2em] text-charcoal-muted dark:text-[#9A9590]">{l}</p>
+                    <p className="font-display text-xl sm:text-2xl lg:text-3xl text-charcoal dark:text-[#F0EDE8] leading-none">{v}</p>
+                    <p className="mt-1.5 text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-charcoal-muted dark:text-[#9A9590]">{l}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-8">
+              <div className="mt-6 sm:mt-8">
                 <Link to="/about"
                   className="inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.2em] text-charcoal dark:text-[#F0EDE8] hover:text-terracotta dark:hover:text-terracotta transition-colors duration-300">
                   Meet the Artist

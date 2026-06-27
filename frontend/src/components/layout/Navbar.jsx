@@ -155,39 +155,95 @@ export default function Navbar() {
               )}
               <AnimatePresence>
                 {dropdownOpen && user && (
-                  <motion.div
-                    initial={{ clipPath:'inset(0 0 100% 0)' }}
-                    animate={{ clipPath:'inset(0 0 0% 0)' }}
-                    exit={{ clipPath:'inset(0 0 100% 0)' }}
-                    transition={{ duration:0.6, ease:[0.77,0,0.18,1] }}
-                    className="absolute right-0 mt-2 w-60 bg-ivory dark:bg-[#1e1c18] border border-charcoal/10 dark:border-white/8 rounded-2xl shadow-2xl shadow-black/10 py-2 z-50 overflow-hidden"
-                  >
-                    <div className="px-4 py-3 border-b border-charcoal/8 dark:border-white/8">
-                      <p className="text-sm font-medium text-charcoal dark:text-[#F0EDE8]">{user.name}</p>
-                      <p className="text-xs text-charcoal-muted mt-0.5">{user.email}</p>
-                    </div>
-                    {[
-                      { to:'/account',               label:'My Profile'    },
-                      { to:'/account/orders',        label:'My Orders'     },
-                      { to:'/account/custom-orders', label:'Custom Orders' },
-                      { to:'/account/wishlist',      label:'Wishlist'      },
-                    ].map(item => (
-                      <Link key={item.to} to={item.to} onClick={()=>setDropdownOpen(false)}
-                        className="block px-4 py-2.5 text-[13px] text-charcoal dark:text-[#D8D4CE] hover:bg-cream dark:hover:bg-white/5 transition-colors">
-                        {item.label}
-                      </Link>
-                    ))}
-                    {isAdmin && (
-                      <Link to="/admin" onClick={()=>setDropdownOpen(false)}
-                        className="block px-4 py-2.5 text-[13px] text-terracotta hover:bg-cream dark:hover:bg-white/5 border-t border-charcoal/8 dark:border-white/8 transition-colors">
-                        Admin Panel
-                      </Link>
-                    )}
-                    <button onClick={()=>{logout();setDropdownOpen(false);}}
-                      className="w-full text-left px-4 py-2.5 text-[13px] text-charcoal dark:text-[#D8D4CE] hover:bg-cream dark:hover:bg-white/5 border-t border-charcoal/8 dark:border-white/8 transition-colors">
-                      Sign Out
-                    </button>
-                  </motion.div>
+                  <>
+                    {/* Backdrop */}
+                    <motion.div
+                      initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+                      transition={{ duration:0.35 }}
+                      className="fixed inset-0 z-[800]"
+                      style={{ background:'rgba(10,9,7,0.55)', backdropFilter:'blur(4px)' }}
+                      onClick={()=>setDropdownOpen(false)}
+                    />
+
+                    {/* Panel — full screen with clip-path animation */}
+                    <motion.div
+                      initial={{ clipPath:'inset(0 0 100% 0)' }}
+                      animate={{ clipPath:'inset(0 0 0% 0)' }}
+                      exit={{ clipPath:'inset(0 0 100% 0)' }}
+                      transition={{ duration:0.6, ease:[0.77,0,0.18,1] }}
+                      className="fixed inset-0 z-[850] flex flex-col"
+                      style={{ background:'#0d0b08' }}
+                    >
+                      {/* Top bar */}
+                      <div className="flex justify-between items-start p-7 sm:p-8 lg:p-10">
+                        <div style={{ fontFamily:"'Playfair Display',serif", fontSize:22, fontWeight:400, color:'white', letterSpacing:'-0.3px', lineHeight:1 }}>
+                          <div>{user.name}</div>
+                          <span style={{ display:'block', fontSize:13, letterSpacing:2, opacity:0.45, fontFamily:"'Inter',sans-serif", fontWeight:300, marginTop:2 }}>{user.email}</span>
+                        </div>
+                        <button onClick={()=>setDropdownOpen(false)}
+                          style={{ background:'none', border:'none', color:'rgba(255,255,255,0.5)', cursor:'pointer', display:'flex', alignItems:'center', gap:6, fontSize:11, letterSpacing:2, textTransform:'uppercase', fontFamily:"'Inter',sans-serif" }}
+                          onMouseEnter={e=>e.currentTarget.style.color='white'}
+                          onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.5)'}
+                        >
+                          Close <span style={{ fontSize:17, lineHeight:1 }}>✕</span>
+                        </button>
+                      </div>
+
+                      {/* Account links — staggered reveal */}
+                      <div className="flex-1 flex items-center px-8 sm:px-12 lg:px-16 overflow-hidden">
+                        <nav style={{ display:'flex', flexDirection:'column', gap:0 }}>
+                          {[
+                            { to:'/account',               label:'My Profile'    },
+                            { to:'/account/orders',        label:'My Orders'     },
+                            { to:'/account/custom-orders', label:'Custom Orders' },
+                            { to:'/account/wishlist',      label:'Wishlist'      },
+                            ...(isAdmin ? [{ to:'/admin', label:'Admin Panel' }] : []),
+                          ].map((item, i) => (
+                            <motion.div key={item.to}
+                              initial={{ opacity:0, y:40 }}
+                              animate={{ opacity:1, y:0 }}
+                              transition={{ delay:0.1+i*0.07, duration:0.6, ease:[0.16,1,0.3,1] }}
+                            >
+                              <Link to={item.to} onClick={()=>setDropdownOpen(false)}
+                                className="group flex items-baseline gap-4 py-3 no-underline"
+                                style={{ color: 'rgba(255,255,255,0.18)', transition:'color 0.25s ease' }}
+                                onMouseEnter={e=>e.currentTarget.style.color='white'}
+                                onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.18)'}
+                              >
+                                <span style={{ fontFamily:"'Playfair Display',serif", fontSize:'clamp(2rem,5vw,4rem)', fontWeight:300, letterSpacing:'-1.5px', lineHeight:1.15 }}>
+                                  {item.label}
+                                </span>
+                              </Link>
+                            </motion.div>
+                          ))}
+                        </nav>
+                      </div>
+
+                      {/* Bottom — Sign Out */}
+                      <motion.div
+                        initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
+                        transition={{ delay:0.5, duration:0.5 }}
+                        className="px-8 sm:px-12 lg:px-16 pb-8 sm:pb-10 flex items-end justify-between"
+                      >
+                        <button onClick={()=>{logout();setDropdownOpen(false);}}
+                          style={{ background:'none', border:'none', color:'rgba(255,255,255,0.3)', fontSize:11, cursor:'pointer', fontFamily:"'Inter',sans-serif", textAlign:'left', letterSpacing:1, textTransform:'uppercase', padding:0 }}>
+                          Sign Out
+                        </button>
+                        <div style={{ display:'flex', gap:16 }}>
+                          {[
+                            { label:'Instagram', href:'https://instagram.com/strokesbysakshi' },
+                            { label:'WhatsApp',  href:'https://wa.me/919876543210' },
+                          ].map(s => (
+                            <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
+                              style={{ color:'rgba(255,255,255,0.28)', fontSize:11, letterSpacing:1, textDecoration:'none', fontFamily:"'Inter',sans-serif", textTransform:'uppercase', transition:'color 0.2s' }}
+                              onMouseEnter={e=>e.currentTarget.style.color='white'}
+                              onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.28)'}
+                            >{s.label}</a>
+                          ))}
+                        </div>
+                      </motion.div>
+                    </motion.div>
+                  </>
                 )}
               </AnimatePresence>
             </div>

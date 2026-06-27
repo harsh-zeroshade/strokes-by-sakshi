@@ -9,11 +9,11 @@ import { useTheme } from '../../context/ThemeContext';
 /* ══════════════════════════════════════════════════════════════════════════
    COLLECTIONS CONFIG — adapted from Delassus PRODUCTS pattern
    Each collection has: bg color, accent color, title, 3D art objects
-══════════════════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════════════════════════ */
 const COLLECTIONS = [
   {
     name: 'Portraits',
-    bg: '#C7694F',          // terracotta
+    bg: '#C7694F',
     accent: '#E8A87C',
     objects: [
       { fn: 'makeCanvas',   x: -0.08, y: 0.20, z: 0,    s: 1.30, ry: 0,    bob: 1.0, bspd: 0.50, bph: 0    },
@@ -23,7 +23,7 @@ const COLLECTIONS = [
   },
   {
     name: 'Landscapes',
-    bg: '#9CAF88',          // sage
+    bg: '#9CAF88',
     accent: '#7A9A68',
     objects: [
       { fn: 'makeCanvas',   x: -0.08, y: 0.22, z: 0,    s: 1.35, ry: 0,    bob: 1.0, bspd: 0.50, bph: 0    },
@@ -34,7 +34,7 @@ const COLLECTIONS = [
   },
   {
     name: 'Abstract',
-    bg: '#4A3728',          // deep walnut
+    bg: '#4A3728',
     accent: '#C9A94E',
     objects: [
       { fn: 'makeInkDrop',  x: -0.08, y: 0.20, z: 0,    s: 1.30, ry: 0,    bob: 0.9, bspd: 0.50, bph: 0    },
@@ -44,7 +44,7 @@ const COLLECTIONS = [
   },
   {
     name: 'Commissions',
-    bg: '#2C2C2C',          // charcoal
+    bg: '#2C2C2C',
     accent: '#C7694F',
     objects: [
       { fn: 'makeBrush',    x: -0.08, y: 0.20, z: 0,    s: 1.30, ry: 0,    bob: 1.0, bspd: 0.50, bph: 0    },
@@ -56,7 +56,7 @@ const COLLECTIONS = [
 
 /* ══════════════════════════════════════════════════════════════════════════
    3D OBJECT MAKERS — art-themed low-poly geometry
-══════════════════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════════════════════════ */
 function flatMat(color, opts = {}) {
   return new THREE.MeshLambertMaterial({ color, flatShading: true, ...opts });
 }
@@ -68,7 +68,6 @@ function jitColor(r, g, b, amount = 0.06) {
 /* Canvas frame with a painted surface */
 function makeCanvas() {
   const g = new THREE.Group();
-  // Frame
   const frameGeo = new THREE.BoxGeometry(1.1, 1.4, 0.06);
   const frameColors = []; const fp = frameGeo.attributes.position;
   for (let i = 0; i < fp.count / 3; i++) {
@@ -77,7 +76,6 @@ function makeCanvas() {
   }
   frameGeo.setAttribute('color', new THREE.Float32BufferAttribute(frameColors, 3));
   g.add(new THREE.Mesh(frameGeo, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true })));
-  // Canvas surface
   const surfGeo = new THREE.PlaneGeometry(0.92, 1.22, 4, 5);
   const surfColors = []; const sp = surfGeo.attributes.position;
   const palette = [[0.97,0.93,0.88],[0.78,0.38,0.22],[0.79,0.67,0.30],[0.61,0.69,0.53]];
@@ -96,7 +94,6 @@ function makeCanvas() {
 function makePalette() {
   const g = new THREE.Group();
   const geo = new THREE.CylinderGeometry(0.52, 0.52, 0.06, 7);
-  // flatten one side for thumb hole
   const pos = geo.attributes.position;
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), z = pos.getZ(i);
@@ -111,7 +108,6 @@ function makePalette() {
   }
   geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
   g.add(new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true })));
-  // Paint dabs
   const dabs = [
     [0.22, 0.04, 0.12, 0.78, 0.38, 0.22],
     [-0.10, 0.04, 0.32, 0.79, 0.67, 0.30],
@@ -137,7 +133,6 @@ function makePalette() {
 /* Paintbrush */
 function makeBrush() {
   const g = new THREE.Group();
-  // Handle
   const hGeo = new THREE.CylinderGeometry(0.045, 0.055, 1.8, 6);
   const hColors = []; const hp = hGeo.attributes.position;
   for (let i = 0; i < hp.count / 3; i++) {
@@ -145,11 +140,9 @@ function makeBrush() {
   }
   hGeo.setAttribute('color', new THREE.Float32BufferAttribute(hColors, 3));
   g.add(new THREE.Mesh(hGeo, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true })));
-  // Ferrule
   const ferGeo = new THREE.CylinderGeometry(0.058, 0.058, 0.18, 6);
   g.add(new THREE.Mesh(ferGeo, flatMat(0xb8b8b8)));
   const fer = g.children[g.children.length - 1]; fer.position.y = -0.96;
-  // Bristle
   const brGeo = new THREE.ConeGeometry(0.055, 0.45, 6);
   const brColors = []; const brp = brGeo.attributes.position;
   for (let i = 0; i < brp.count / 3; i++) {
@@ -166,12 +159,11 @@ function makeBrush() {
 /* Ink drop / splash */
 function makeInkDrop() {
   const g = new THREE.Group();
-  // Main drop (icosahedron)
   const dGeo = new THREE.IcosahedronGeometry(0.52, 1);
   const pos = dGeo.attributes.position;
   for (let i = 0; i < pos.count; i++) {
     const y = pos.getY(i);
-    pos.setY(i, y * (y > 0 ? 1.25 : 0.75)); // teardrop shape
+    pos.setY(i, y * (y > 0 ? 1.25 : 0.75));
   }
   dGeo.computeVertexNormals();
   const dColors = [];
@@ -182,7 +174,6 @@ function makeInkDrop() {
   }
   dGeo.setAttribute('color', new THREE.Float32BufferAttribute(dColors, 3));
   g.add(new THREE.Mesh(dGeo, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true })));
-  // Splash ring
   for (let i = 0; i < 6; i++) {
     const a = (i / 6) * Math.PI * 2;
     const sGeo = new THREE.SphereGeometry(0.06 + Math.random() * 0.04, 4, 4);
@@ -198,7 +189,7 @@ const MAKERS = { makeCanvas, makePalette, makeBrush, makeInkDrop };
 
 /* ══════════════════════════════════════════════════════════════════════════
    HERO SECTION
-══════════════════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════════════════════════ */
 export default function HeroSection() {
   const canvasRef   = useRef(null);
   const sectionRef  = useRef(null);
@@ -354,18 +345,15 @@ export default function HeroSection() {
     const t = threeRef.current;
     if (idx === t.currentIdx) return;
 
-    // Title swap animation
     setTitleState('out');
     setTimeout(() => {
       setTitle(COLLECTIONS[idx].name);
       setTitleState('in');
     }, 270);
 
-    // 3D transition
     t.outGroups = [...t.groups];
     t.groups = [];
     const nd = buildGroup(idx);
-    // Start new group invisible, shifted below
     nd.fruits.forEach(f => { f.mesh.position.y = f.baseY - 1.4; });
     nd.group.traverse(o => { if (o.material) { o.material.transparent = true; o.material.opacity = 0; } });
     t.groups = [nd];
@@ -428,12 +416,12 @@ export default function HeroSection() {
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100,
           display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-          padding: '28px 32px 0',
+          padding: 'clamp(16px, 3vw, 28px) clamp(12px, 3vw, 32px) 0',
         }}>
           {/* Logo */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Link to="/" style={{ textDecoration: 'none' }}>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 400, color: 'white', letterSpacing: '-0.3px', lineHeight: 1 }}>
+              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(18px, 3vw, 22px)', fontWeight: 400, color: 'white', letterSpacing: '-0.3px', lineHeight: 1 }}>
                 Strokes
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
@@ -442,22 +430,22 @@ export default function HeroSection() {
                     <div key={i} style={{ width: 4, height: 4, background: 'white', borderRadius: '50%' }} />
                   ))}
                 </div>
-                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, fontWeight: 300, color: 'white', letterSpacing: '0.5px', lineHeight: 1 }}>
+                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 'clamp(13px, 2vw, 15px)', fontWeight: 300, color: 'white', letterSpacing: '0.5px', lineHeight: 1 }}>
                   by Sakshi
                 </span>
               </div>
-              <div style={{ marginTop: 8, border: '1px solid rgba(255,255,255,0.5)', borderRadius: 2, padding: '3px 8px', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <div style={{ marginTop: 'clamp(4px, 1vw, 8px)', border: '1px solid rgba(255,255,255,0.5)', borderRadius: 2, padding: '2px clamp(4px, 1vw, 8px)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                 <svg width="11" height="11" viewBox="0 0 20 20" fill="white" opacity="0.8"><polygon points="10,2 18,7 18,13 10,18 2,13 2,7"/></svg>
-                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 9, color: 'rgba(255,255,255,0.8)', letterSpacing: '1.5px', fontStyle: 'italic' }}>India</span>
+                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 'clamp(8px, 1.2vw, 9px)', color: 'rgba(255,255,255,0.8)', letterSpacing: '1.5px', fontStyle: 'italic' }}>India</span>
               </div>
             </Link>
           </div>
 
           {/* Right side: icons + hamburger */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(0px, 0.5vw, 4px)', marginTop: 2 }}>
             {/* Theme toggle */}
             <button onClick={toggle} aria-label="Toggle theme"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, color: 'rgba(255,255,255,0.75)', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 'clamp(4px, 1vw, 8px)', color: 'rgba(255,255,255,0.75)', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
               onMouseEnter={e => e.currentTarget.style.color = 'white'}
               onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.75)'}
             >
@@ -469,7 +457,7 @@ export default function HeroSection() {
 
             {/* Cart */}
             <button onClick={() => setCartOpen(true)} aria-label="Cart"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, color: 'rgba(255,255,255,0.75)', position: 'relative', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 'clamp(4px, 1vw, 8px)', color: 'rgba(255,255,255,0.75)', position: 'relative', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
               onMouseEnter={e => e.currentTarget.style.color = 'white'}
               onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.75)'}
             >
@@ -485,7 +473,7 @@ export default function HeroSection() {
             <div style={{ position: 'relative' }}>
               {user ? (
                 <button onClick={() => setDropdownOpen(p => !p)} aria-label="Account"
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, color: 'rgba(255,255,255,0.75)', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 'clamp(4px, 1vw, 8px)', color: 'rgba(255,255,255,0.75)', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
                   onMouseEnter={e => e.currentTarget.style.color = 'white'}
                   onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.75)'}
                 >
@@ -493,7 +481,7 @@ export default function HeroSection() {
                 </button>
               ) : (
                 <Link to="/login" aria-label="Login"
-                  style={{ display: 'flex', alignItems: 'center', padding: 8, color: 'rgba(255,255,255,0.75)', transition: 'color 0.2s' }}
+                  style={{ display: 'flex', alignItems: 'center', padding: 'clamp(4px, 1vw, 8px)', color: 'rgba(255,255,255,0.75)', transition: 'color 0.2s' }}
                   onMouseEnter={e => e.currentTarget.style.color = 'white'}
                   onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.75)'}
                 >
@@ -546,10 +534,10 @@ export default function HeroSection() {
 
             {/* Hamburger */}
             <button onClick={() => setMenuOpen(true)} aria-label="Open menu"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, display: 'flex', flexDirection: 'column', gap: 5 }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 'clamp(4px, 1vw, 8px)', display: 'flex', flexDirection: 'column', gap: 5 }}
             >
               {[0,1,2].map(i => (
-                <span key={i} style={{ display: 'block', width: 26, height: 1, background: 'white' }} />
+                <span key={i} style={{ display: 'block', width: 'clamp(20px, 3vw, 26px)', height: 1, background: 'white' }} />
               ))}
             </button>
           </div>
@@ -559,10 +547,13 @@ export default function HeroSection() {
         <div
           style={{
             position: 'absolute',
-            top: '42%', left: '42%',
-            transform: 'translate(-40%, -52%)',
+            top: '50%',
+            left: '50%',
+            transform: titleState === 'out'
+              ? 'translate(-50%, -50%) translateY(14px)'
+              : 'translate(-50%, -50%) translateY(0px)',
             fontFamily: "'Playfair Display', serif",
-            fontSize: 'clamp(72px, 12vw, 160px)',
+            fontSize: 'clamp(48px, 14vw, 160px)',
             fontWeight: 300,
             color: 'white',
             letterSpacing: '-2px',
@@ -571,9 +562,6 @@ export default function HeroSection() {
             zIndex: 20,
             whiteSpace: 'nowrap',
             opacity: titleState === 'out' ? 0 : 1,
-            transform: titleState === 'out'
-              ? 'translate(-40%, -52%) translateY(14px)'
-              : 'translate(-40%, -52%) translateY(0px)',
             transition: titleState === 'out'
               ? 'opacity 0.25s ease, transform 0.25s ease'
               : 'opacity 0.45s ease, transform 0.45s cubic-bezier(0.22,1,0.36,1)',
@@ -586,9 +574,10 @@ export default function HeroSection() {
         <div
           onClick={resetCycle}
           style={{
-            position: 'absolute', bottom: 56, left: 0, right: 0,
+            position: 'absolute', bottom: 'clamp(48px, 6vw, 56px)', left: 0, right: 0,
             display: 'flex', justifyContent: 'center', alignItems: 'center',
-            zIndex: 50,
+            zIndex: 50, flexWrap: 'wrap', gap: 'clamp(0px, 1vw, 4px)',
+            padding: '0 clamp(8px, 2vw, 16px)',
           }}
         >
           {COLLECTIONS.map((c, i) => (
@@ -599,8 +588,8 @@ export default function HeroSection() {
                 background: 'none', border: 'none', cursor: 'pointer',
                 color: i === activeIdx ? 'white' : 'rgba(255,255,255,0.55)',
                 fontFamily: "'Inter', sans-serif",
-                fontSize: 13, fontWeight: 400, letterSpacing: '0.3px',
-                padding: '6px 20px 8px',
+                fontSize: 'clamp(11px, 1.5vw, 13px)', fontWeight: 400, letterSpacing: '0.3px',
+                padding: '6px clamp(10px, 2vw, 20px) 8px',
                 position: 'relative',
                 transition: 'color 0.3s',
                 userSelect: 'none', whiteSpace: 'nowrap',
@@ -611,7 +600,7 @@ export default function HeroSection() {
               {c.name}
               {/* Active underline */}
               <span style={{
-                position: 'absolute', bottom: 0, left: 20, right: 20,
+                position: 'absolute', bottom: 0, left: 'clamp(10px, 2vw, 20px)', right: 'clamp(10px, 2vw, 20px)',
                 height: '1.5px', background: 'white', borderRadius: 1,
                 transform: i === activeIdx ? 'scaleX(1)' : 'scaleX(0)',
                 transformOrigin: 'center',
@@ -625,11 +614,14 @@ export default function HeroSection() {
         <Link
           to="/shop"
           style={{
-            position: 'absolute', right: 52, bottom: 46, zIndex: 50,
-            display: 'flex', alignItems: 'center', gap: 14,
-            padding: '15px 28px',
+            position: 'absolute',
+            right: 'clamp(12px, 4vw, 52px)',
+            bottom: 'clamp(80px, 10vw, 46px)',
+            zIndex: 50,
+            display: 'flex', alignItems: 'center', gap: 'clamp(8px, 1.5vw, 14px)',
+            padding: 'clamp(10px, 1.5vw, 15px) clamp(16px, 3vw, 28px)',
             fontFamily: "'Inter', sans-serif",
-            fontSize: 13, fontWeight: 500, letterSpacing: '0.5px',
+            fontSize: 'clamp(11px, 1.2vw, 13px)', fontWeight: 500, letterSpacing: '0.5px',
             color: '#1a1a1a',
             backgroundColor: col.accent,
             textDecoration: 'none', border: 'none', cursor: 'pointer',
@@ -645,17 +637,18 @@ export default function HeroSection() {
         {/* ── FOOTER BAR ── */}
         <div style={{
           position: 'absolute', bottom: 0, left: 0, right: 0,
-          padding: '0 32px 18px', zIndex: 50,
-          display: 'flex', alignItems: 'center', gap: 28,
+          padding: '0 clamp(12px, 3vw, 32px) clamp(12px, 2vw, 18px)', zIndex: 50,
+          display: 'flex', alignItems: 'center', gap: 'clamp(12px, 3vw, 28px)',
+          flexWrap: 'wrap',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Link to="/about" style={{ color: 'white', fontSize: 11, fontWeight: 400, letterSpacing: '1.5px', textDecoration: 'none', opacity: 1, fontFamily: "'Inter', sans-serif", textTransform: 'uppercase', borderBottom: '1.5px solid white', paddingBottom: 1 }}>About</Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(6px, 1vw, 10px)' }}>
+            <Link to="/about" style={{ color: 'white', fontSize: 'clamp(9px, 1.1vw, 11px)', fontWeight: 400, letterSpacing: '1.5px', textDecoration: 'none', opacity: 1, fontFamily: "'Inter', sans-serif", textTransform: 'uppercase', borderBottom: '1.5px solid white', paddingBottom: 1 }}>About</Link>
             <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10 }}>·</span>
-            <Link to="/contact" style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11, fontWeight: 400, letterSpacing: '1.5px', textDecoration: 'none', fontFamily: "'Inter', sans-serif", textTransform: 'uppercase' }}>Contact</Link>
+            <Link to="/contact" style={{ color: 'rgba(255,255,255,0.65)', fontSize: 'clamp(9px, 1.1vw, 11px)', fontWeight: 400, letterSpacing: '1.5px', textDecoration: 'none', fontFamily: "'Inter', sans-serif", textTransform: 'uppercase' }}>Contact</Link>
           </div>
-          <div style={{ display: 'flex', gap: 24 }}>
-            <Link to="/commission" style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11, letterSpacing: '0.5px', textDecoration: 'none', fontFamily: "'Inter', sans-serif" }}>Commission</Link>
-            <Link to="/gallery" style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11, letterSpacing: '0.5px', textDecoration: 'none', fontFamily: "'Inter', sans-serif" }}>Gallery</Link>
+          <div style={{ display: 'flex', gap: 'clamp(12px, 2vw, 24px)' }}>
+            <Link to="/commission" style={{ color: 'rgba(255,255,255,0.65)', fontSize: 'clamp(9px, 1.1vw, 11px)', letterSpacing: '0.5px', textDecoration: 'none', fontFamily: "'Inter', sans-serif" }}>Commission</Link>
+            <Link to="/gallery" style={{ color: 'rgba(255,255,255,0.65)', fontSize: 'clamp(9px, 1.1vw, 11px)', letterSpacing: '0.5px', textDecoration: 'none', fontFamily: "'Inter', sans-serif" }}>Gallery</Link>
           </div>
         </div>
       </section>
@@ -673,24 +666,24 @@ export default function HeroSection() {
         }}
       >
         {/* Menu top */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '28px 32px 0' }}>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 400, color: 'white', letterSpacing: '-0.3px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: 'clamp(16px, 3vw, 28px) clamp(12px, 3vw, 32px) 0' }}>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(18px, 2.5vw, 20px)', fontWeight: 400, color: 'white', letterSpacing: '-0.3px' }}>
             Strokes<br/>
-            <span style={{ fontSize: 13, letterSpacing: 2, opacity: 0.5, fontFamily: "'Inter', sans-serif", fontWeight: 300 }}>by Sakshi</span>
+            <span style={{ fontSize: 'clamp(11px, 1.5vw, 13px)', letterSpacing: 2, opacity: 0.5, fontFamily: "'Inter', sans-serif", fontWeight: 300 }}>by Sakshi</span>
           </div>
           <button
             onClick={() => setMenuOpen(false)}
-            style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', fontFamily: "'Inter', sans-serif", opacity: 0.6, display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, transition: 'opacity 0.2s' }}
+            style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: 'clamp(10px, 1.2vw, 11px)', letterSpacing: 2, textTransform: 'uppercase', fontFamily: "'Inter', sans-serif", opacity: 0.6, display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, transition: 'opacity 0.2s' }}
             onMouseEnter={e => e.currentTarget.style.opacity = 1}
             onMouseLeave={e => e.currentTarget.style.opacity = 0.6}
           >
-            <span>Close Menu</span>
+            <span>Close</span>
             <span style={{ fontSize: 18, lineHeight: 1 }}>✕</span>
           </button>
         </div>
 
         {/* Menu links */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '0 80px' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '0 clamp(24px, 6vw, 80px)' }}>
           <nav style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {[
               { num: '01.', label: 'Shop',       path: '/shop'       },
@@ -705,13 +698,13 @@ export default function HeroSection() {
                 onClick={() => setMenuOpen(false)}
                 style={{
                   fontFamily: "'Playfair Display', serif",
-                  fontSize: 'clamp(38px, 5.5vw, 68px)',
+                  fontSize: 'clamp(28px, 6vw, 68px)',
                   fontWeight: 300,
                   color: 'rgba(255,255,255,0.22)',
                   textDecoration: 'none',
                   letterSpacing: '-1px',
                   lineHeight: 1.25,
-                  display: 'flex', alignItems: 'baseline', gap: 16,
+                  display: 'flex', alignItems: 'baseline', gap: 'clamp(8px, 1.5vw, 16px)',
                   transition: 'color 0.25s ease',
                 }}
                 onMouseEnter={e => e.currentTarget.style.color = 'white'}
@@ -725,14 +718,14 @@ export default function HeroSection() {
         </div>
 
         {/* Menu bottom */}
-        <div style={{ padding: '0 80px 44px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div style={{ padding: '0 clamp(24px, 6vw, 80px) clamp(24px, 4vw, 44px)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[
               { label: 'Instagram', href: 'https://instagram.com/strokesbysakshi' },
               { label: 'WhatsApp',  href: 'https://wa.me/1234567890' },
             ].map(s => (
               <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
-                style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, letterSpacing: '0.5px', textDecoration: 'none', transition: 'color 0.2s', fontFamily: "'Inter', sans-serif" }}
+                style={{ color: 'rgba(255,255,255,0.35)', fontSize: 'clamp(11px, 1.2vw, 13px)', letterSpacing: '0.5px', textDecoration: 'none', transition: 'color 0.2s', fontFamily: "'Inter', sans-serif" }}
                 onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}
                 onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}
               >{s.label}</a>

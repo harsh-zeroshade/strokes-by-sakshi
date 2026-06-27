@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authAPI } from '../api';
+import { STORAGE_URL } from '../config';
 
 const AuthContext = createContext(null);
 
@@ -13,6 +14,15 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Normalize avatar URLs: if path starts with /storage, prepend STORAGE_URL
+  const normalizeUser = (userData) => {
+    if (!userData) return userData;
+    if (userData.avatar_url && !userData.avatar_url.startsWith('http') && userData.avatar_url.startsWith('/storage')) {
+      return { ...userData, avatar_url: `${STORAGE_URL}${userData.avatar_url}` };
+    }
+    return userData;
+  };
+
   const loadUser = useCallback(async () => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -21,7 +31,7 @@ export function AuthProvider({ children }) {
     }
     try {
       const { data } = await authAPI.user();
-      setUser(data);
+      setUser(normalizeUser(data));
     } catch (err) {
       // Only clear token on 401 Unauthorized — not on network errors (CORS, server down, etc.)
       if (err.response?.status === 401) {
@@ -38,7 +48,7 @@ export function AuthProvider({ children }) {
   const login = async (credentials) => {
     const { data } = await authAPI.login(credentials);
     localStorage.setItem('token', data.token);
-    setUser(data.user);
+    setUser(normalizeUser(data.user));
     window.dispatchEvent(new CustomEvent('auth:login'));
     return data;
   };
@@ -46,7 +56,7 @@ export function AuthProvider({ children }) {
   const register = async (userData) => {
     const { data } = await authAPI.register(userData);
     localStorage.setItem('token', data.token);
-    setUser(data.user);
+    setUser(normalizeUser(data.user));
     window.dispatchEvent(new CustomEvent('auth:login'));
     return data;
   };
@@ -62,7 +72,7 @@ export function AuthProvider({ children }) {
     const { data } = await authAPI.verifyOtp({ email, code, type });
     if (data.token) {
       localStorage.setItem('token', data.token);
-      setUser(data.user);
+      setUser(normalizeUser(data.user));
       window.dispatchEvent(new CustomEvent('auth:login'));
     }
     return data;
@@ -123,7 +133,7 @@ export function AuthProvider({ children }) {
 
   const updateProfile = async (profileData) => {
     const { data } = await authAPI.updateProfile(profileData);
-    setUser(data);
+    setUser(normalizeUser(data));
     return data;
   };
 
@@ -131,7 +141,11 @@ export function AuthProvider({ children }) {
     const fd = new FormData();
     fd.append('avatar', file);
     const { data } = await authAPI.uploadAvatar(fd);
-    setUser(prev => ({ ...prev, avatar_url: data.avatar_url }));
+    // Normalize the returned avatar URL
+    const avatarUrl = data.avatar_url && !data.avatar_url.startsWith('http') && data.avatar_url.startsWith('/storage')
+      ? `${STORAGE_URL}${data.avatar_url}`
+      : data.avatar_url;
+    setUser(prev => ({ ...prev, avatar_url: avatarUrl }));
     return data;
   };
 
