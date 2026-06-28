@@ -23,11 +23,22 @@ class AuthController extends Controller
     public function register(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'phone'    => 'nullable|string|max:20',
+            'name'     => 'required|string|max:255|regex:/^[\pL\s\-\'\.]+$/u',
+            'email'    => 'required|string|email:rfc,dns|max:255|unique:users',
+            'password' => [
+                'required', 'string', 'min:8', 'max:128', 'confirmed',
+                'regex:/[A-Z]/',    // at least one uppercase
+                'regex:/[0-9]/',    // at least one number
+            ],
+            'phone'    => 'nullable|string|max:20|regex:/^[\+\d\s\-\(\)]+$/',
+        ], [
+            'password.regex' => 'Password must contain at least one uppercase letter and one number.',
+            'name.regex'     => 'Name may only contain letters, spaces, hyphens, and apostrophes.',
         ]);
+
+        // Normalise
+        $validated['email'] = strtolower(trim($validated['email']));
+        $validated['name']  = trim($validated['name']);
 
         $user = User::create([
             'name'     => $validated['name'],
@@ -51,13 +62,17 @@ class AuthController extends Controller
     public function login(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'email'    => 'required|string|email',
-            'password' => 'required|string',
+            'email'    => 'required|string|email|max:255',
+            'password' => 'required|string|min:1|max:256',
         ]);
 
+        // Normalise email
+        $validated['email'] = strtolower(trim($validated['email']));
+
         if (!Auth::attempt($validated)) {
+            // Generic message — don't reveal whether email exists
             throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
+                'email' => ['These credentials do not match our records.'],
             ]);
         }
 
@@ -65,6 +80,8 @@ class AuthController extends Controller
 
         $this->mergeGuestCart($user, $request);
 
+        // Rotate token on each login (invalidate old tokens to prevent session fixation)
+        $user->tokens()->delete();
         $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
@@ -279,11 +296,26 @@ class AuthController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
-            'name'       => 'sometimes|string|max:255',
-            'phone'      => 'sometimes|string|max:20',
+            'name'       => 'sometimes|string|max:255|regex:/^[\pL\s\-\'\.]+$/u',
+            'phone'      => 'sometimes|nullable|string|max:20|regex:/^[\+\d\s\-\(\)]+$/',
             'bio'        => 'sometimes|nullable|string|max:1000',
-            'avatar_url' => 'sometimes|nullable|url|starts_with:https://',
+            // Only allow Cloudinary or Google avatar URLs — reject arbitrary external images
+            'avatar_url' => [
+                'sometimes', 'nullable', 'url', 'max:500',
+                'regex:#^https://(res\.cloudinary\.com|lh3\.googleusercontent\.com)/#i',
+            ],
+        ], [
+            'name.regex'       => 'Name may only contain letters, spaces, hyphens, and apostrophes.',
+            'avatar_url.regex' => 'Avatar URL must be a Cloudinary or Google image URL.',
         ]);
+
+        // Sanitise bio — strip HTML tags
+        if (isset($validated['bio'])) {
+            $validated['bio'] = strip_tags($validated['bio']);
+        }
+        if (isset($validated['name'])) {
+            $validated['name'] = trim($validated['name']);
+        }
 
         $user->update($validated);
 
@@ -295,28 +327,43 @@ class AuthController extends Controller
     public function uploadAvatar(Request $request): JsonResponse
     {
         $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,webp,jpg|max:3072',
+            'avatar' => 'required|image|mimes:jpeg,png,webp,jpg|max:3072|dimensions:min_width=50,min_height=50,max_width=4000,max_height=4000',
         ]);
 
         $user = $request->user();
+
+        // Rate-limit: max 5 avatar uploads per hour per user
+        $cacheKey = 'avatar_upload:' . $user->id;
+        $uploads  = \Illuminate\Support\Facades\Cache::get($cacheKey, 0);
+        if ($uploads >= 5) {
+            return response()->json(['message' => 'Too many uploads. Please try again later.'], 429);
+        }
+        \Illuminate\Support\Facades\Cache::put($cacheKey, $uploads + 1, now()->addHour());
+
+        // Verify file is actually an image by checking magic bytes
+        $file      = $request->file('avatar');
+        $mimeType  = $file->getMimeType();
+        if (!in_array($mimeType, ['image/jpeg', 'image/png', 'image/webp'])) {
+            return response()->json(['message' => 'Invalid image format.'], 422);
+        }
 
         // Delete old Cloudinary avatar if it exists
         if ($user->avatar_url && str_contains($user->avatar_url, 'cloudinary.com')) {
             try {
                 $cloudinary = new CloudinaryService();
-                $publicId = $cloudinary->getPublicId($user->avatar_url);
+                $publicId   = $cloudinary->getPublicId($user->avatar_url);
                 if ($publicId) {
                     $cloudinary->destroy($publicId);
                 }
             } catch (\Exception $e) {
-                // Silently skip — old avatar deletion is best-effort
+                // Best-effort — don't block upload if delete fails
             }
         }
 
         // Upload new avatar to Cloudinary
         $cloudinary = new CloudinaryService();
-        $avatarUrl = $cloudinary->upload(
-            $request->file('avatar'),
+        $avatarUrl  = $cloudinary->upload(
+            $file,
             'strokes-by-sakshi/avatars/' . $user->id
         );
 

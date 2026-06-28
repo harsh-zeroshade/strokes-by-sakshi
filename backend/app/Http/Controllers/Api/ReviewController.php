@@ -6,10 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Review;
 use App\Models\Product;
 use App\Models\Order;
-use App\Support\MediaUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class ReviewController extends Controller
 {
@@ -84,12 +82,12 @@ class ReviewController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'order_id'   => 'nullable|exists:orders,id',
+            'product_id' => 'required|integer|exists:products,id',
+            'order_id'   => 'nullable|integer|exists:orders,id',
             'rating'     => 'required|integer|min:1|max:5',
-            'title'      => 'nullable|string|max:255',
-            'body'       => 'nullable|string|max:5000',
-            'image'      => 'nullable|image|mimes:jpeg,png,webp,jpg|max:4096',
+            'title'      => 'nullable|string|max:120',
+            'body'       => 'nullable|string|max:2000',
+            'image'      => 'nullable|image|mimes:jpeg,png,webp,jpg|max:4096|dimensions:min_width=50,min_height=50',
         ]);
 
         $userId = $request->user()->id;
@@ -99,7 +97,7 @@ class ReviewController extends Controller
             return response()->json(['message' => 'You have already reviewed this product.'], 422);
         }
 
-        // Verify purchase (only if order_id provided or enforce it)
+        // Verify purchase server-side — cannot be bypassed from the frontend
         $hasPurchased = Order::where('user_id', $userId)
             ->whereIn('status', ['delivered', 'completed'])
             ->whereHas('items', function ($q) use ($validated) {
@@ -108,14 +106,27 @@ class ReviewController extends Controller
             ->exists();
 
         if (! $hasPurchased) {
-            return response()->json(['message' => 'You can only review products you have purchased.'], 403);
+            return response()->json(['message' => 'You can only review products you have purchased and received.'], 403);
         }
 
-        // Upload review image if provided
+        // Sanitise text inputs — strip HTML tags
+        $title = isset($validated['title']) ? strip_tags($validated['title']) : null;
+        $body  = isset($validated['body'])  ? strip_tags($validated['body'])  : null;
+
+        // Upload review image to Cloudinary if provided
         $imageUrl = null;
         if ($request->hasFile('image')) {
-            $path     = $request->file('image')->store('reviews', 'public');
-            $imageUrl = MediaUrl::normalize(Storage::url($path));
+            $file     = $request->file('image');
+            $mimeType = $file->getMimeType();
+            if (!in_array($mimeType, ['image/jpeg', 'image/png', 'image/webp'])) {
+                return response()->json(['message' => 'Invalid image format.'], 422);
+            }
+            try {
+                $cloudinary = new \App\Services\CloudinaryService();
+                $imageUrl   = $cloudinary->upload($file, 'strokes-by-sakshi/reviews');
+            } catch (\Exception $e) {
+                // Proceed without image if upload fails — don't block review
+            }
         }
 
         $review = Review::create([
@@ -123,8 +134,8 @@ class ReviewController extends Controller
             'user_id'    => $userId,
             'order_id'   => $validated['order_id'] ?? null,
             'rating'     => $validated['rating'],
-            'title'      => $validated['title'] ?? null,
-            'body'       => $validated['body'] ?? null,
+            'title'      => $title,
+            'body'       => $body,
             'image_url'  => $imageUrl,
         ]);
 

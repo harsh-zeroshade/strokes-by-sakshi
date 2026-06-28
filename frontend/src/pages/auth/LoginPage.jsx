@@ -48,7 +48,14 @@ export default function LoginPage() {
       const data = await login(form);
       navigate(data.user?.is_admin ? '/admin' : '/', { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password.');
+      const status = err.response?.status;
+      if (status === 429) {
+        const retry = err.response?.data?.retry_after || 60;
+        setError(`Too many login attempts. Please wait ${retry} seconds before trying again.`);
+      } else {
+        // Generic message — don't leak whether email exists
+        setError('Incorrect email or password.');
+      }
     } finally {
       setSubmitting(false);
     }

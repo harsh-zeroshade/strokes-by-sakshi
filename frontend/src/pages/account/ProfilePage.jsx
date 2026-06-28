@@ -114,6 +114,10 @@ function AvatarUploader({ user, onUploaded }) {
 
   const initials = user?.name?.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase() || '?';
   const src = prev || user?.avatar_url || null;
+  const [imgError, setImgError] = useState(false);
+
+  // Reset error when src changes
+  useEffect(() => { setImgError(false); }, [src]);
 
   const onFile = async e => {
     const file = e.target.files?.[0];
@@ -142,8 +146,9 @@ function AvatarUploader({ user, onUploaded }) {
         className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden group cursor-pointer flex-shrink-0 ring-2 ring-terracotta/20 hover:ring-terracotta/50 transition-all duration-300"
         aria-label="Change profile picture"
       >
-        {src ? (
-          <img src={src} alt={user?.name} className="w-full h-full object-cover" />
+        {src && !imgError ? (
+          <img src={src} alt={user?.name} className="w-full h-full object-cover"
+            onError={() => setImgError(true)} />
         ) : (
           <div className="w-full h-full flex items-center justify-center font-display text-3xl text-ivory"
             style={{ background: `hsl(${(user?.id||0)*47+10},42%,52%)` }}>

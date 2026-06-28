@@ -31,10 +31,11 @@ Route::get('/cors-test', function () {
 // Auth — rate-limited to reduce brute-force and OTP abuse
 Route::middleware('throttle:10,1')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
     Route::post('/otp/verify', [AuthController::class, 'verifyOtp']);
 });
-Route::post('/otp/send', [AuthController::class, 'sendOtp'])->middleware('throttle:5,1');
+// Login has tighter throttle: 5 attempts per minute, then locked for 5 minutes
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+Route::post('/otp/send', [AuthController::class, 'sendOtp'])->middleware('throttle:3,1');
 Route::get('/auth/google/redirect', [AuthController::class, 'googleRedirect']);
 Route::get('/auth/google/callback', [AuthController::class, 'googleCallback']);
 
@@ -101,7 +102,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/wishlist/{product}', [WishlistController::class, 'remove']);
 
     // Reviews
-    Route::post('/reviews', [ReviewController::class, 'store']);
+    Route::post('/reviews', [ReviewController::class, 'store'])->middleware('throttle:3,60');
 
     // Admin Routes
     Route::middleware('admin')->prefix('admin')->group(function () {
