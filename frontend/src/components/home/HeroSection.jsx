@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { useTheme } from '../../context/ThemeContext';
+import Logo from '../ui/Logo';
 
 /* ══════════════════════════════════════════════════════════════════════════
    COLLECTIONS CONFIG — adapted from Delassus PRODUCTS pattern
@@ -418,28 +419,10 @@ export default function HeroSection() {
           display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
           padding: 'clamp(16px, 3vw, 28px) clamp(12px, 3vw, 32px) 0',
         }}>
-          {/* Logo */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Link to="/" style={{ textDecoration: 'none' }}>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(18px, 3vw, 22px)', fontWeight: 400, color: 'white', letterSpacing: '-0.3px', lineHeight: 1 }}>
-                Strokes
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 4px)', gap: '2.5px', marginTop: 1 }}>
-                  {[...Array(9)].map((_, i) => (
-                    <div key={i} style={{ width: 4, height: 4, background: 'white', borderRadius: '50%' }} />
-                  ))}
-                </div>
-                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 'clamp(13px, 2vw, 15px)', fontWeight: 300, color: 'white', letterSpacing: '0.5px', lineHeight: 1 }}>
-                  by Sakshi
-                </span>
-              </div>
-              <div style={{ marginTop: 'clamp(4px, 1vw, 8px)', border: '1px solid rgba(255,255,255,0.5)', borderRadius: 2, padding: '2px clamp(4px, 1vw, 8px)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                <svg width="11" height="11" viewBox="0 0 20 20" fill="white" opacity="0.8"><polygon points="10,2 18,7 18,13 10,18 2,13 2,7"/></svg>
-                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 'clamp(8px, 1.2vw, 9px)', color: 'rgba(255,255,255,0.8)', letterSpacing: '1.5px', fontStyle: 'italic' }}>India</span>
-              </div>
-            </Link>
-          </div>
+          {/* Logo — same component as Navbar for consistency */}
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <Logo size="md" color="ivory" variant="full" />
+          </Link>
 
           {/* Right side: icons + hamburger */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(0px, 0.5vw, 4px)', marginTop: 2 }}>

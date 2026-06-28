@@ -1,185 +1,107 @@
 /**
- * Logo — crossed paintbrush + pencil icon with "Strokes by Sakshi" wordmark.
+ * Logo — "Strokes" + 3×3 dot grid + "by Sakshi" + India badge
+ * Matches the hero section Delassus-style logo exactly.
+ *
  * Props:
- *   variant  — 'full' (icon + text) | 'icon' (icon only) | 'text' (text only)
- *   color    — 'terracotta' (default) | 'ivory' | 'charcoal' | 'auto'
- *              'auto' = terracotta on light bg, ivory on dark bg
- *   size     — 'sm' | 'md' (default) | 'lg'
- *   className — extra classes
+ *   color    — 'terracotta' | 'ivory' | 'charcoal'   (default: 'terracotta')
+ *   size     — 'sm' | 'md' | 'lg'                    (default: 'md')
+ *   variant  — 'full' | 'compact'                    (default: 'full')
+ *              full    = Strokes + dots + "by Sakshi" + badge
+ *              compact = Strokes + dots + "by Sakshi" (no badge)
  */
 export default function Logo({
-  variant  = 'full',
-  color    = 'terracotta',
-  size     = 'md',
+  color   = 'terracotta',
+  size    = 'md',
+  variant = 'full',
   className = '',
 }) {
-  const fill = color === 'ivory'    ? '#FAF7F2'
-             : color === 'charcoal' ? '#2C2C2C'
-             : '#C7694F'; // terracotta default
+  const c = color === 'ivory'
+    ? { text:'#FAF7F2', dot:'rgba(250,247,242,0.85)', badge:'rgba(250,247,242,0.5)', badgeText:'rgba(250,247,242,0.8)' }
+    : color === 'charcoal'
+    ? { text:'#2C2C2C', dot:'rgba(44,44,44,0.7)',     badge:'rgba(44,44,44,0.4)',    badgeText:'rgba(44,44,44,0.7)' }
+    : { text:'#C7694F', dot:'rgba(199,105,79,0.8)',    badge:'rgba(199,105,79,0.45)', badgeText:'rgba(199,105,79,0.85)' };
 
-  const iconSizes = { sm: 24, md: 34, lg: 48 };
-  const textSizes = { sm: 'text-base', md: 'text-xl', lg: 'text-3xl' };
-  const iconPx = iconSizes[size] || 34;
+  const scale = size === 'sm' ? 0.78 : size === 'lg' ? 1.22 : 1.0;
 
-  const Icon = () => (
-    <svg
-      width={iconPx}
-      height={iconPx}
-      viewBox="0 0 100 100"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-      className="flex-shrink-0"
-    >
-      {/*
-        Paintbrush — runs top-left to bottom-right
-        Handle: wide rounded rect; Ferrule: thin band; Bristle: rounded tip
-      */}
-      {/* Paintbrush handle */}
-      <rect
-        x="10" y="8"
-        width="14" height="56"
-        rx="7"
-        fill={fill}
-        transform="rotate(45 50 50) translate(-22 -28)"
-      />
-      {/* Paintbrush bristle tip */}
-      <ellipse
-        cx="22" cy="80"
-        rx="8" ry="12"
-        fill={fill}
-        transform="rotate(45 50 50) translate(-28 -28)"
-      />
-
-      {/*
-        Pencil — runs top-right to bottom-left (crosses brush)
-        Body: rect; Tip: triangle; Eraser: small rounded rect
-      */}
-      {/* Pencil body */}
-      <rect
-        x="58" y="6"
-        width="12" height="52"
-        rx="3"
-        fill={fill}
-        transform="rotate(-45 50 50) translate(8 -26)"
-      />
-      {/* Pencil tip */}
-      <polygon
-        points="64,58 70,58 67,72"
-        fill={fill}
-        transform="rotate(-45 50 50) translate(8 -26)"
-      />
-      {/* Eraser */}
-      <rect
-        x="59" y="4"
-        width="12" height="8"
-        rx="2"
-        fill={fill}
-        opacity="0.7"
-        transform="rotate(-45 50 50) translate(8 -26)"
-      />
-    </svg>
-  );
-
-  /* ── Fully inline SVG for the crossed brush+pencil — hand-crafted paths ── */
-  const CrossedIcon = () => (
-    <svg
-      width={iconPx}
-      height={iconPx}
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-      className="flex-shrink-0"
-    >
-      {/* ── Paintbrush (bottom-left to top-right, slight tilt) ── */}
-      {/* handle */}
-      <rect x="4" y="29" width="44" height="9" rx="4.5" fill={fill}
-            transform="rotate(-40 4 29)" />
-      {/* ferrule (metal band) */}
-      <rect x="4" y="29" width="8" height="9" rx="2" fill={fill} opacity="0.75"
-            transform="rotate(-40 4 29)" />
-      {/* bristle */}
-      <ellipse cx="8" cy="53" rx="5.5" ry="9" fill={fill}
-               transform="rotate(-40 8 53)" />
-
-      {/* ── Pencil (top-left to bottom-right, crosses brush) ── */}
-      {/* body */}
-      <rect x="16" y="3" width="9" height="44" rx="3" fill={fill}
-            transform="rotate(40 16 3)" />
-      {/* tip */}
-      <polygon points="50,46 59,46 54.5,58" fill={fill}
-               transform="rotate(40 50 46)" />
-      {/* eraser */}
-      <rect x="16" y="3" width="9" height="7" rx="2.5" fill={fill} opacity="0.7"
-            transform="rotate(40 16 3)" />
-    </svg>
-  );
-
-  /* ── Cleaner approach: use a single well-crafted viewBox ── */
-  const LogoIcon = () => (
-    <svg
-      width={iconPx}
-      height={iconPx}
-      viewBox="0 0 80 80"
-      fill={fill}
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-      className="flex-shrink-0"
-    >
-      {/*
-        Paintbrush: runs from top-left (8,8) to bottom-right (54,72)
-        Pencil:     runs from top-right (72,8) to bottom-left (26,72)
-        They cross at roughly (40,40)
-      */}
-
-      {/* ── PAINTBRUSH ─────────────────────────────────────────
-           A group rotated -45° around centre, representing:
-           - long rounded handle
-           - narrow ferrule
-           - tapered bristle tip with a round end
-      ─────────────────────────────────────────────────────── */}
-      <g transform="translate(40,40) rotate(-45) translate(-40,-40)">
-        {/* handle */}
-        <rect x="36" y="6"  width="8" height="46" rx="4" />
-        {/* ferrule */}
-        <rect x="35" y="48" width="10" height="7" rx="1.5" opacity="0.8"/>
-        {/* bristle */}
-        <ellipse cx="40" cy="64" rx="6" ry="10" />
-        {/* bristle tip highlight */}
-        <ellipse cx="40" cy="70" rx="3" ry="4" opacity="0.6" />
-      </g>
-
-      {/* ── PENCIL ─────────────────────────────────────────────
-           A group rotated +45° around centre, representing:
-           - rectangular body
-           - triangular wooden tip
-           - small eraser
-      ─────────────────────────────────────────────────────── */}
-      <g transform="translate(40,40) rotate(45) translate(-40,-40)">
-        {/* body */}
-        <rect x="36" y="10" width="8" height="42" rx="2" />
-        {/* wooden tip */}
-        <polygon points="36,52 44,52 40,64" />
-        {/* graphite tip dot */}
-        <circle cx="40" cy="63" r="2" opacity="0.7" />
-        {/* eraser */}
-        <rect x="35" y="6" width="10" height="7" rx="2" opacity="0.75" />
-        {/* eraser band */}
-        <rect x="35" y="11" width="10" height="2" rx="1" opacity="0.5" />
-      </g>
-    </svg>
-  );
+  const strokFontSize   = Math.round(22 * scale);
+  const subFontSize     = Math.round(14 * scale);
+  const dotSize         = Math.round(4  * scale);
+  const dotGap          = Math.round(3  * scale);
+  const badgePadH       = Math.round(8  * scale);
+  const badgePadV       = Math.round(3  * scale);
+  const badgeFontSize   = Math.round(9  * scale);
+  const hexSize         = Math.round(11 * scale);
 
   return (
-    <span className={`inline-flex items-center gap-2.5 ${className}`}>
-      {variant !== 'text' && <LogoIcon />}
-      {variant !== 'icon' && (
-        <span
-          className={`font-display font-medium leading-none ${textSizes[size]}`}
-          style={{ color: fill }}
-        >
-          Strokes by Sakshi
+    <span
+      className={`inline-flex flex-col items-start select-none ${className}`}
+      style={{ gap: Math.round(2 * scale) }}
+      aria-label="Strokes by Sakshi"
+    >
+      {/* "Strokes" */}
+      <span style={{
+        fontFamily: "'Playfair Display', Georgia, serif",
+        fontSize:   strokFontSize,
+        fontWeight: 400,
+        color:      c.text,
+        letterSpacing: '-0.3px',
+        lineHeight: 1,
+        display:    'block',
+      }}>
+        Strokes
+      </span>
+
+      {/* dot grid + "by Sakshi" */}
+      <span style={{ display:'flex', alignItems:'center', gap: Math.round(5 * scale), marginTop: Math.round(1 * scale) }}>
+        {/* 3×3 dot grid */}
+        <span style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(3, ${dotSize}px)`,
+          gap: `${dotGap}px`,
+          flexShrink: 0,
+        }}>
+          {[...Array(9)].map((_, i) => (
+            <span key={i} style={{ width: dotSize, height: dotSize, background: c.dot, borderRadius: '50%', display: 'block' }}/>
+          ))}
+        </span>
+
+        {/* "by Sakshi" */}
+        <span style={{
+          fontFamily: "'Inter', 'Segoe UI', sans-serif",
+          fontSize:   subFontSize,
+          fontWeight: 300,
+          color:      c.text,
+          letterSpacing: '0.5px',
+          lineHeight: 1,
+        }}>
+          by Sakshi
+        </span>
+      </span>
+
+      {/* India badge */}
+      {variant === 'full' && (
+        <span style={{
+          marginTop:   Math.round(6 * scale),
+          border:      `1px solid ${c.badge}`,
+          borderRadius: 2,
+          padding:     `${badgePadV}px ${badgePadH}px`,
+          display:     'inline-flex',
+          alignItems:  'center',
+          gap:         Math.round(4 * scale),
+        }}>
+          {/* Hexagon icon */}
+          <svg width={hexSize} height={hexSize} viewBox="0 0 20 20" fill={c.badgeText} opacity="0.85" aria-hidden="true">
+            <polygon points="10,2 18,6.5 18,13.5 10,18 2,13.5 2,6.5"/>
+          </svg>
+          <span style={{
+            fontFamily:    "'Inter', sans-serif",
+            fontSize:      badgeFontSize,
+            fontStyle:     'italic',
+            letterSpacing: '1.5px',
+            color:         c.badgeText,
+          }}>
+            India
+          </span>
         </span>
       )}
     </span>

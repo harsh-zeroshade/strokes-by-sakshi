@@ -518,7 +518,7 @@ export default function GalleryPage() {
   const categoryPills = [{ slug:'', name:'All' }, ...categories];
 
   return (
-    <div className="min-h-screen bg-ivory dark:bg-[#1A1814] overflow-x-hidden">
+    <div className="min-h-screen bg-ivory dark:bg-[#1A1814]">
 
       {/* ══ HERO — always dark ════════════════════════════ */}
       <section style={{ position:'relative', height:'100vh', minHeight:640,

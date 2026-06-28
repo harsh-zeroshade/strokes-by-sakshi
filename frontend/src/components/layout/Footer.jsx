@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { SITE_CONFIG } from '../../config';
+import Logo from '../ui/Logo';
 
 const SHOP_LINKS = [
   { label: 'All Artworks',     path: '/shop'                       },
@@ -96,21 +97,9 @@ export default function Footer() {
 
           {/* Brand column */}
           <div>
-            {/* Logo text — Delassus style */}
+            {/* Logo — same design as hero */}
             <Link to="/" className="no-underline inline-block" aria-label="Strokes by Sakshi">
-              <div style={{ fontFamily:"'Playfair Display',serif", fontSize:26, fontWeight:300, color:'white', letterSpacing:'-0.5px', lineHeight:1 }}>
-                Strokes
-              </div>
-              <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:4 }}>
-                <div style={{ display:'grid', gridTemplateColumns:'repeat(3,3.5px)', gap:'2.5px' }}>
-                  {[...Array(9)].map((_,i)=>(
-                    <div key={i} style={{ width:3.5, height:3.5, background:'rgba(255,255,255,0.4)', borderRadius:'50%' }}/>
-                  ))}
-                </div>
-                <span style={{ fontFamily:"'Inter',sans-serif", fontSize:14, fontWeight:300, color:'rgba(255,255,255,0.5)', letterSpacing:'0.5px' }}>
-                  by Sakshi
-                </span>
-              </div>
+              <Logo size="md" color="ivory" variant="full" />
             </Link>
 
             <p className="mt-5 text-sm leading-relaxed max-w-xs"

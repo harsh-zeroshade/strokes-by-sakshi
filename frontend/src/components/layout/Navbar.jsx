@@ -115,7 +115,7 @@ export default function Navbar() {
         <div className="hidden lg:grid grid-cols-[1fr_auto_1fr] items-center h-[68px] max-w-[1400px] mx-auto px-8 xl:px-12">
           {/* Left: Logo */}
           <Link to="/" aria-label="Strokes by Sakshi" className="inline-flex">
-            <Logo size="md" color="terracotta" variant="full" />
+            <Logo size="sm" color="terracotta" variant="compact" />
           </Link>
 
           {/* Centre: Nav */}
@@ -281,7 +281,7 @@ export default function Navbar() {
 
         {/* Mobile */}
         <div className="lg:hidden flex items-center justify-between h-16 px-4 sm:px-6">
-          <Link to="/"><Logo size="sm" color="terracotta" variant="full" /></Link>
+          <Link to="/"><Logo size="sm" color="terracotta" variant="compact" /></Link>
           <div className="flex items-center gap-0.5 text-charcoal dark:text-[#F0EDE8]">
             <button onClick={()=>setCartOpen(true)} aria-label="Cart" className={`${iconBtn} relative`}>
               <BagIcon />
@@ -320,10 +320,7 @@ export default function Navbar() {
               {/* Menu top */}
               <div className="flex justify-between items-start p-7 sm:p-8 lg:p-10">
                 <Link to="/" onClick={()=>setMenuOpen(false)} className="no-underline">
-                  <div style={{ fontFamily:"'Playfair Display',serif", fontSize:22, fontWeight:400, color:'white', letterSpacing:'-0.3px', lineHeight:1 }}>
-                    Strokes
-                    <span style={{ display:'block', fontSize:13, letterSpacing:2, opacity:0.45, fontFamily:"'Inter',sans-serif", fontWeight:300 }}>by Sakshi</span>
-                  </div>
+                  <Logo size="md" color="ivory" variant="full" />
                 </Link>
                 <div className="flex items-center gap-3 mt-1">
                   {/* Theme inside menu */}

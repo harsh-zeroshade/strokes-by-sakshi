@@ -179,7 +179,7 @@ export default function ShopPage() {
   const typePills=[{value:'original',label:'Original'},{value:'print',label:'Prints'},{value:'limited_edition',label:'Limited Editions'}];
 
   return (
-    <div className="min-h-screen bg-ivory dark:bg-[#1A1814] overflow-x-hidden">
+    <div className="min-h-screen bg-ivory dark:bg-[#1A1814]">
 
       {/* ── Dark hero ── */}
       <section style={{position:'relative',height:'100vh',minHeight:640,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',overflow:'hidden',background:'#0D0D0D'}}>
