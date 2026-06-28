@@ -173,22 +173,11 @@ function GalleryCard({ product, index, hue, span, onOpen }) {
       initial={{ opacity:0, y:50, scale:0.97 }}
       animate={inView ? { opacity:1, y:0, scale:1 } : {}}
       transition={{ duration:0.75, delay:index*0.07, ease:[0.22,1,0.36,1] }}
-      style={{
-        gridColumn: span==='wide' ? 'span 2' : 'span 1',
-        gridRow:    span==='tall' ? 'span 2' : 'span 1',
-        rotateX:rx, rotateY:ry,
-        transformStyle:'preserve-3d', perspective:800,
-        background:'#141414',
-        border:'1px solid rgba(247,242,234,0.07)',
-        borderRadius:3, overflow:'hidden',
-        display:'flex', flexDirection:'column', cursor:'pointer',
-        transition:'border-color 0.3s',
-      }}
-      whileHover={{ borderColor:'rgba(199,105,79,0.3)' }}
+      style={{ rotateX:rx, rotateY:ry, transformStyle:'preserve-3d', perspective:800 }}
+      className="relative rounded-sm overflow-hidden flex flex-col cursor-pointer bg-ivory dark:bg-[#1e1c18] border border-charcoal/10 dark:border-white/8 hover:border-terracotta/35 dark:hover:border-terracotta/35 transition-colors duration-300"
     >
       {/* Art area */}
-      <div style={{ position:'relative', flex:1, overflow:'hidden',
-        background:`linear-gradient(145deg, #111110 0%, #1a1915 100%)` }}>
+      <div className="relative overflow-hidden bg-cream dark:bg-[#252219]" style={{ aspectRatio:'3/4' }}>
         {img && !imgError ? (
           <img src={img} alt={product.name} draggable={false}
             onError={() => setImgError(true)}
@@ -258,26 +247,14 @@ function GalleryCard({ product, index, hue, span, onOpen }) {
       </div>
 
       {/* Caption */}
-      <div style={{
-        padding:'16px 18px',
-        display:'flex', alignItems:'center', justifyContent:'space-between', gap:12,
-        borderTop:'1px solid rgba(247,242,234,0.07)',
-        background:'#141414',
-      }}>
-        <div>
-          <h3 style={{ fontFamily:"'Playfair Display',serif", fontSize:16, fontWeight:600,
-            color:'#F7F2EA', lineHeight:1.2 }}>{product.name}</h3>
+      <div className="flex items-center justify-between gap-3 px-4 py-3.5 border-t border-charcoal/8 dark:border-white/8 bg-ivory dark:bg-[#1e1c18]">
+        <div className="min-w-0">
+          <h3 className="font-display text-base font-semibold text-charcoal dark:text-[#F0EDE8] leading-snug truncate">{product.name}</h3>
           {product.short_description && (
-            <p style={{ fontSize:11, color:'rgba(247,242,234,0.4)', marginTop:3,
-              letterSpacing:'0.02em', overflow:'hidden', display:'-webkit-box',
-              WebkitLineClamp:1, WebkitBoxOrient:'vertical' }}>
-              {product.short_description}
-            </p>
+            <p className="text-[11px] text-charcoal-muted dark:text-[#9A9590] mt-0.5 truncate">{product.short_description}</p>
           )}
         </div>
-        <motion.div
-          animate={{ x: hovered?4:0, opacity: hovered?1:0.4 }}
-          transition={{ duration:0.25 }}
+        <motion.div animate={{ x:hovered?4:0, opacity:hovered?1:0.4 }} transition={{ duration:0.25 }}
           style={{ color:hue, fontSize:20, flexShrink:0, lineHeight:1 }}>↗</motion.div>
       </div>
     </motion.article>
@@ -541,13 +518,12 @@ export default function GalleryPage() {
   const categoryPills = [{ slug:'', name:'All' }, ...categories];
 
   return (
-    <div style={{ background:'#0D0D0D', color:'#F7F2EA', minHeight:'100vh', overflowX:'hidden',
-      fontFamily:"'Inter',sans-serif" }}>
+    <div className="min-h-screen bg-ivory dark:bg-[#1A1814] overflow-x-hidden">
 
-      {/* ══ HERO ════════════════════════════════════════════ */}
+      {/* ══ HERO — always dark ════════════════════════════ */}
       <section style={{ position:'relative', height:'100vh', minHeight:640,
         display:'flex', flexDirection:'column', alignItems:'center',
-        justifyContent:'center', textAlign:'center', overflow:'hidden' }}>
+        justifyContent:'center', textAlign:'center', overflow:'hidden', background:'#0D0D0D' }}>
         <div style={{ position:'absolute', inset:0,
           background:'radial-gradient(ellipse 90% 65% at 50% 55%, #17140e 0%, #0D0D0D 72%)' }}/>
         <BrushRibbonCanvas />
@@ -616,149 +592,103 @@ export default function GalleryPage() {
         </motion.div>
       </section>
 
-      {/* ══ GALLERY BODY ════════════════════════════════════ */}
-      <section style={{ position:'relative', padding:'80px clamp(20px,4vw,60px)',
-        maxWidth:1440, margin:'0 auto' }}>
+      {/* ══ GALLERY BODY — light/dark ════════════════════ */}
+      <section className="bg-ivory dark:bg-[#1A1814] relative">
         <InkTracePath />
-
-        <div style={{ position:'relative', zIndex:1 }}>
-          {/* Section header */}
-          <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between',
-            flexWrap:'wrap', gap:24, marginBottom:40 }}>
+        <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pt-14 sm:pt-20 pb-10">
+          {/* Header */}
+          <div className="flex flex-wrap items-end justify-between gap-5 mb-8">
             <motion.div initial={{ opacity:0, x:-24 }} whileInView={{ opacity:1, x:0 }}
               viewport={{ once:true }} transition={{ duration:0.7 }}>
-              <p style={{ fontSize:11, fontWeight:500, letterSpacing:'0.28em', textTransform:'uppercase',
-                color:'rgba(247,242,234,0.35)', marginBottom:6 }}>Selected Works</p>
-              <h2 className="font-display"
-                style={{ fontSize:'clamp(1.8rem,3.5vw,2.8rem)', fontWeight:600, lineHeight:1.1 }}>
-                The <em style={{ fontStyle:'italic', color:'#C7694F' }}>Collection</em>
+              <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-muted dark:text-[#9A9590] font-medium mb-2">Selected Works</p>
+              <h2 className="font-display text-charcoal dark:text-[#F0EDE8]"
+                style={{ fontSize:'clamp(1.8rem,3.5vw,2.8rem)', fontWeight:400, letterSpacing:'-0.01em' }}>
+                The <em className="not-italic text-terracotta">Collection</em>
               </h2>
             </motion.div>
-
-            {/* Filter tabs — layoutId pill */}
+            {/* Category filter */}
             <motion.div initial={{ opacity:0, x:24 }} whileInView={{ opacity:1, x:0 }}
               viewport={{ once:true }} transition={{ duration:0.7 }}
-              style={{ display:'flex', gap:0, border:'1px solid rgba(247,242,234,0.07)',
-                borderRadius:2, overflow:'hidden' }}>
+              className="flex gap-0 overflow-hidden rounded-sm border border-charcoal/10 dark:border-white/8">
               {categoryPills.map(cat => (
                 <button key={cat.slug}
-                  onClick={() => setActiveCategory(cat.slug === activeCategory ? '' : cat.slug)}
-                  style={{
-                    position:'relative',
-                    padding:'10px 20px',
-                    fontFamily:"'Inter',sans-serif", fontSize:12, fontWeight:500,
-                    letterSpacing:'0.06em',
-                    color: activeCategory===cat.slug ? '#0D0D0D' : 'rgba(247,242,234,0.45)',
-                    background:'transparent', border:'none',
-                    borderRight:'1px solid rgba(247,242,234,0.07)', cursor:'pointer',
-                    transition:'color 0.25s',
-                  }}>
+                  onClick={() => setActiveCategory(cat.slug===activeCategory?'':cat.slug)}
+                  className={`relative px-4 py-2.5 text-[11px] font-medium tracking-[0.06em] transition-colors duration-200 border-r border-charcoal/10 dark:border-white/8 last:border-r-0 ${
+                    activeCategory===cat.slug
+                      ? 'text-ivory dark:text-[#1A1814] bg-terracotta'
+                      : 'text-charcoal-muted dark:text-[#9A9590] bg-cream dark:bg-[#252219] hover:text-charcoal dark:hover:text-[#F0EDE8]'
+                  }`}>
                   {activeCategory===cat.slug && (
-                    <motion.span layoutId="gallery-tab"
-                      transition={{ type:'spring', stiffness:400, damping:32 }}
-                      style={{ position:'absolute', inset:0, background:'#C7694F',
-                        zIndex:0, borderRadius:0 }}/>
+                    <motion.span layoutId="gallery-tab" transition={{ type:'spring', stiffness:400, damping:32 }}
+                      className="absolute inset-0 bg-terracotta" style={{ zIndex:0 }}/>
                   )}
-                  <span style={{ position:'relative', zIndex:1 }}>{cat.name}</span>
+                  <span className="relative z-10">{cat.name}</span>
                 </button>
               ))}
             </motion.div>
           </div>
+          <div className="h-px bg-charcoal/8 dark:bg-white/8 mb-8"/>
 
-          {/* Bento grid */}
+          {/* Grid */}
           <AnimatePresence mode="wait">
-            <motion.div key={activeCategory}
-              initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+            <motion.div key={activeCategory} initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
               transition={{ duration:0.25 }}
-              style={{
-                display:'grid',
-                gridTemplateColumns:'repeat(3,1fr)',
-                gridAutoRows:360, gap:18,
-              }}
-              className="gallery-grid"
-            >
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {loading ? (
                 [...Array(6)].map((_,i) => (
-                  <motion.div key={i} initial={{ opacity:0 }} animate={{ opacity:1 }}
-                    transition={{ delay:i*0.06 }}
-                    style={{
-                      background:'#1C1B19', borderRadius:3,
-                      gridRow: i===0?'span 2':i===2?'span 2':'span 1',
-                      gridColumn: i===1?'span 2':'span 1',
-                      animation:'gal-pulse 1.5s ease-in-out infinite',
-                    }}/>
+                  <div key={i} className="rounded-2xl overflow-hidden animate-pulse">
+                    <div className="bg-cream dark:bg-[#252219]" style={{ aspectRatio:'3/4' }}/>
+                    <div className="p-4 bg-ivory dark:bg-[#1e1c18] space-y-2">
+                      <div className="h-4 rounded bg-cream dark:bg-[#252219] w-3/4"/>
+                      <div className="h-3 rounded bg-cream dark:bg-[#252219] w-1/2"/>
+                    </div>
+                  </div>
                 ))
-              ) : products.length===0 ? (
-                <div style={{ gridColumn:'1/-1', display:'flex', flexDirection:'column',
-                  alignItems:'center', gap:16, padding:'80px 20px',
-                  color:'rgba(247,242,234,0.3)' }}>
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" strokeWidth="1.5" style={{ opacity:0.3 }}>
-                    <path strokeLinecap="round" strokeLinejoin="round"
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              ) : products.length === 0 ? (
+                <div className="col-span-full flex flex-col items-center gap-4 py-20 text-charcoal-muted dark:text-[#9A9590]">
+                  <svg className="w-12 h-12 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                   </svg>
-                  <p className="font-display" style={{ fontSize:22, fontStyle:'italic',
-                    color:'rgba(247,242,234,0.3)' }}>No artworks found</p>
+                  <p className="font-display text-xl italic opacity-40">No artworks found</p>
                 </div>
               ) : (
                 products.map((p, i) => (
                   <GalleryCard key={p.id} product={p} index={i}
-                    hue={HUES[i % HUES.length]}
-                    span={SPANS[i % SPANS.length]}
+                    hue={HUES[i % HUES.length]} span="normal"
                     onOpen={openLightbox}/>
                 ))
               )}
             </motion.div>
           </AnimatePresence>
         </div>
-      </section>
 
-      {/* ══ BOTTOM CTA ═══════════════════════════════════════ */}
-      <motion.section initial={{ opacity:0, y:40 }} whileInView={{ opacity:1, y:0 }}
-        viewport={{ once:true }} transition={{ duration:0.8, ease:[0.22,1,0.36,1] }}
-        style={{
-          borderTop:'1px solid rgba(247,242,234,0.07)',
-          padding:'64px clamp(20px,4vw,60px)',
-          maxWidth:1440, margin:'0 auto',
-          display:'grid', gridTemplateColumns:'1fr 1fr', gap:60, alignItems:'center',
-        }}
-        className="gh-bottom-grid"
-      >
-        <div>
-          <h2 className="font-display"
-            style={{ fontSize:'clamp(1.6rem,3vw,2.4rem)', fontWeight:600, lineHeight:1.2 }}>
-            Want something made<br/>
-            <em style={{ fontStyle:'italic', color:'#C7694F' }}>just for you?</em>
-          </h2>
-          <p style={{ fontSize:14, lineHeight:1.8, color:'rgba(247,242,234,0.45)',
-            fontWeight:300, marginTop:14 }}>
-            Every commission begins with a conversation. Share what matters —
-            a name, a feeling, a memory — and I'll find the right medium to carry it.
-          </p>
-        </div>
-        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
-          <motion.a href="/commission" whileHover={{ scale:1.04, opacity:0.9 }} whileTap={{ scale:0.97 }}
-            style={{
-              display:'inline-flex', alignItems:'center', gap:8,
-              background:'#C7694F', color:'#0D0D0D', border:'none',
-              padding:'16px 40px', fontFamily:"'Inter',sans-serif", fontSize:13,
-              fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase',
-              cursor:'pointer', borderRadius:2, textDecoration:'none', alignSelf:'flex-start',
-            }}>
-            Start a Commission
-          </motion.a>
-          <p style={{ fontSize:12, color:'rgba(247,242,234,0.35)', lineHeight:1.6,
-            display:'flex', alignItems:'flex-start', gap:10 }}>
-            <span style={{ color:'#C7694F', flexShrink:0 }}>—</span>
-            Commissions are accepted in small batches. Response within 48 hours.
-          </p>
-          <p style={{ fontSize:12, color:'rgba(247,242,234,0.35)', lineHeight:1.6,
-            display:'flex', alignItems:'flex-start', gap:10 }}>
-            <span style={{ color:'#C7694F', flexShrink:0 }}>—</span>
-            Bespoke work ships within 10–14 days of final approval.
-          </p>
-        </div>
-      </motion.section>
+        {/* Bottom CTA */}
+        <motion.section initial={{ opacity:0, y:30 }} whileInView={{ opacity:1, y:0 }}
+          viewport={{ once:true }} transition={{ duration:0.8 }}
+          className="border-t border-charcoal/8 dark:border-white/6 px-4 sm:px-6 lg:px-10 py-14 max-w-[1440px] mx-auto grid sm:grid-cols-2 gap-10 items-center">
+          <div>
+            <h2 className="font-display text-charcoal dark:text-[#F0EDE8] leading-tight"
+              style={{ fontSize:'clamp(1.6rem,3vw,2.4rem)', fontWeight:400 }}>
+              Want something made<br/>
+              <em className="not-italic text-terracotta">just for you?</em>
+            </h2>
+            <p className="text-sm text-charcoal-muted dark:text-[#9A9590] leading-relaxed mt-4 max-w-sm">
+              Every commission begins with a conversation. Share what matters and I'll find the right medium to carry it.
+            </p>
+          </div>
+          <div className="flex flex-col gap-4">
+            <motion.a href="/commission" whileHover={{ scale:1.03 }} whileTap={{ scale:0.97 }}
+              className="inline-flex items-center gap-2 self-start px-8 py-4 bg-terracotta text-ivory text-[11px] uppercase tracking-[0.1em] font-semibold rounded-sm hover:opacity-90 transition-opacity"
+              style={{ textDecoration:'none' }}>
+              Start a Commission
+            </motion.a>
+            <p className="text-xs text-charcoal-muted dark:text-[#9A9590] flex items-start gap-2">
+              <span className="text-terracotta flex-shrink-0">—</span>
+              Commissions are accepted in small batches. Response within 48 hours.
+            </p>
+          </div>
+        </motion.section>
+      </section>
 
       {/* ══ LIGHTBOX ═════════════════════════════════════════ */}
       <AnimatePresence>

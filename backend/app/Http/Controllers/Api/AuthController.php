@@ -23,17 +23,10 @@ class AuthController extends Controller
     public function register(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'name'     => 'required|string|max:255|regex:/^[\pL\s\-\'\.]+$/u',
-            'email'    => 'required|string|email:rfc,dns|max:255|unique:users',
-            'password' => [
-                'required', 'string', 'min:8', 'max:128', 'confirmed',
-                'regex:/[A-Z]/',    // at least one uppercase
-                'regex:/[0-9]/',    // at least one number
-            ],
-            'phone'    => 'nullable|string|max:20|regex:/^[\+\d\s\-\(\)]+$/',
-        ], [
-            'password.regex' => 'Password must contain at least one uppercase letter and one number.',
-            'name.regex'     => 'Name may only contain letters, spaces, hyphens, and apostrophes.',
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|max:128|confirmed',
+            'phone'    => 'nullable|string|max:20',
         ]);
 
         // Normalise
@@ -61,26 +54,26 @@ class AuthController extends Controller
 
     public function login(Request $request): JsonResponse
     {
-        $validated = $request->validate([
+        $request->validate([
             'email'    => 'required|string|email|max:255',
-            'password' => 'required|string|min:1|max:256',
+            'password' => 'required|string|max:256',
         ]);
 
-        // Normalise email
-        $validated['email'] = strtolower(trim($validated['email']));
+        $email    = strtolower(trim($request->input('email')));
+        $password = $request->input('password');
 
-        if (!Auth::attempt($validated)) {
-            // Generic message — don't reveal whether email exists
+        // Find user case-insensitively so existing mixed-case accounts still work
+        $user = User::whereRaw('LOWER(email) = ?', [$email])->first();
+
+        if (!$user || !Hash::check($password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['These credentials do not match our records.'],
             ]);
         }
 
-        $user = Auth::user();
-
         $this->mergeGuestCart($user, $request);
 
-        // Rotate token on each login (invalidate old tokens to prevent session fixation)
+        // Revoke old tokens and issue a fresh one
         $user->tokens()->delete();
         $token = $user->createToken('auth-token')->plainTextToken;
 

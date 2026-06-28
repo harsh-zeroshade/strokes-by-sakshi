@@ -16,9 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);
         $middleware->append(\App\Http\Middleware\SecurityHeadersMiddleware::class);
-
-        // Custom throttle response — return JSON instead of HTML for API routes
-        $middleware->throttleWithRedis();
+        // Note: throttleWithRedis() removed — shared hosting has no Redis.
+        // Laravel's default file/cache-based throttle (throttle:X,Y) works fine.
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Return JSON for throttle (429) and auth (401/403) errors on API routes

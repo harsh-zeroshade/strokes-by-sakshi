@@ -52,8 +52,13 @@ export default function LoginPage() {
       if (status === 429) {
         const retry = err.response?.data?.retry_after || 60;
         setError(`Too many login attempts. Please wait ${retry} seconds before trying again.`);
+      } else if (status === 422) {
+        // Validation error — wrong credentials
+        const msgs = err.response?.data?.errors;
+        setError(msgs ? Object.values(msgs).flat().join(' ') : 'Incorrect email or password.');
+      } else if (status >= 500) {
+        setError('Server error. Please try again in a moment.');
       } else {
-        // Generic message — don't leak whether email exists
         setError('Incorrect email or password.');
       }
     } finally {
@@ -70,7 +75,16 @@ export default function LoginPage() {
       await sendOtp({ email: form.email, type: 'login' });
       setStep('otp');
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Something went wrong');
+      const status = err.response?.status;
+      if (status === 404) {
+        setError('No account found with this email address.');
+      } else if (status === 429) {
+        setError('Too many attempts. Please wait a moment before trying again.');
+      } else if (status >= 500) {
+        setError('Server error. Please try again or use password login instead.');
+      } else {
+        setError(err.response?.data?.message || 'Could not send verification code. Please try again.');
+      }
     } finally {
       setSubmitting(false);
     }
