@@ -1,16 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { adminAPI, productAPI } from '../../api';
 import AdminLayout, { AdminCard, Badge } from './AdminLayout';
-import { STORAGE_URL } from '../../config';
+import { resolveImageUrl, resolveProductImage } from '../../utils/imageUrl';
 
 function formatINR(v) {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(v || 0);
-}
-
-function getImg(product) {
-  const url = product.primary_image?.image_url || product.thumbnail;
-  if (!url) return null;
-  return url.startsWith('http') ? url : `${STORAGE_URL}/${url}`;
 }
 
 const EMPTY_FORM = {
@@ -159,7 +153,7 @@ export function AdminProductsList() {
                     <div key={i} className="h-56 rounded-xl animate-pulse" style={{ background: dark ? '#1f2937' : '#fff' }} />
                   ))
                 : filtered.map(product => {
-                    const img = getImg(product);
+                    const img = resolveProductImage(product);
                     return (
                       <div
                         key={product.id}
@@ -320,7 +314,7 @@ export function AdminProductsList() {
                           {existingImages.map((img, i) => (
                             <div key={i} className="relative group">
                               <img
-                                src={img.image_url}
+                                src={resolveImageUrl(img.image_url)}
                                 alt={img.alt_text || ''}
                                 className="w-20 h-20 rounded-lg object-cover border"
                                 style={{ borderColor: img.is_primary ? '#c7694f' : dark ? '#3B475C' : '#E2E8F0',

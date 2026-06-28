@@ -101,6 +101,10 @@ class OrderController extends Controller
             ->with('items')
             ->firstOrFail();
 
+        if ($order->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         return response()->json($order);
     }
 }

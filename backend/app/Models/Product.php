@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\MediaUrl;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -96,7 +97,9 @@ class Product extends Model
     public function getThumbnailAttribute()
     {
         $image = $this->primaryImage;
-        return $image ? $image->thumbnail_url : $this->images->first()->image_url ?? null;
+        $url = $image ? $image->thumbnail_url : $this->images->first()?->image_url;
+
+        return MediaUrl::normalize($url);
     }
 
     public function getAverageRatingAttribute()

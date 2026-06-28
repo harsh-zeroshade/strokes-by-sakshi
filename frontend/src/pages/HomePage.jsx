@@ -6,13 +6,7 @@ import FeaturedSlider from '../components/home/FeaturedSlider';
 import CollectionCards from '../components/home/CollectionCards';
 import TestimonialsSection from '../components/home/TestimonialsSection';
 import { productAPI } from '../api';
-import { STORAGE_URL } from '../config';
-
-function getImageUrl(product) {
-  const url = product.primary_image?.image_url || product.thumbnail || product.image_url;
-  if (!url) return null;
-  return url.startsWith('http') ? url : `${STORAGE_URL}/${url}`;
-}
+import { resolveProductImage } from '../utils/imageUrl';
 
 const fadeUp = {
   initial: { opacity: 0, y: 40 },
@@ -345,7 +339,7 @@ export default function HomePage() {
                   { colSpan:'col-span-2 row-span-1', idx:4 },
                 ].map(({ colSpan, idx }) => {
                   const item = items[idx];
-                  const imgUrl = item?.primary_image?.image_url || item?.thumbnail
+                  const imgUrl = resolveProductImage(item)
                     || `https://picsum.photos/seed/${80+idx}/600/600`;
                   return (
                     <motion.a key={idx} href="https://instagram.com/strokesbysakshi"

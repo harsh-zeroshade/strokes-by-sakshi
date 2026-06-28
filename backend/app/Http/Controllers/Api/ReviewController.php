@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Review;
 use App\Models\Product;
 use App\Models\Order;
+use App\Support\MediaUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -114,7 +115,7 @@ class ReviewController extends Controller
         $imageUrl = null;
         if ($request->hasFile('image')) {
             $path     = $request->file('image')->store('reviews', 'public');
-            $imageUrl = Storage::url($path);
+            $imageUrl = MediaUrl::normalize(Storage::url($path));
         }
 
         $review = Review::create([

@@ -2,13 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { productAPI } from '../api';
-import { STORAGE_URL } from '../config';
-
-function getImageUrl(product) {
-  const url = product.primary_image?.image_url || product.thumbnail || product.image_url;
-  if (!url) return null;
-  return url.startsWith('http') ? url : `${STORAGE_URL}/${url}`;
-}
+import { resolveProductImage } from '../utils/imageUrl';
 
 export default function GalleryPage() {
   const [products, setProducts] = useState([]);
@@ -96,7 +90,7 @@ export default function GalleryPage() {
         ) : (
           <div className="columns-2 sm:columns-3 gap-4 space-y-4">
             {filtered.map((product, i) => {
-              const imgUrl = getImageUrl(product);
+              const imgUrl = resolveProductImage(product);
               return (
                 <motion.div
                   key={product.id}

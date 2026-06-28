@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCart } from '../../context/CartContext';
+import { resolveProductImage } from '../../utils/imageUrl';
 
 export default function CartDrawer() {
   const { cart, cartOpen, setCartOpen, removeItem, updateQuantity } = useCart();
@@ -73,8 +74,8 @@ export default function CartDrawer() {
                   >
                     {/* Image */}
                     <div className="w-20 h-20 rounded-md bg-ivory-dark flex-shrink-0 overflow-hidden">
-                      {item.product?.thumbnail ? (
-                        <img src={item.product.thumbnail} alt={item.product_name} className="w-full h-full object-cover" />
+                      {resolveProductImage(item.product) ? (
+                        <img src={resolveProductImage(item.product)} alt={item.product_name} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-charcoal-muted text-xs">{item.product?.name?.charAt(0)}</div>
                       )}

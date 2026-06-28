@@ -2,14 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { productAPI } from '../api';
-import { STORAGE_URL } from '../config';
-
-function getImageUrl(product) {
-  const url = product.primary_image?.image_url || product.thumbnail || product.image_url;
-  if (!url) return null;
-  // If already absolute, return as-is; otherwise prefix storage URL
-  return url.startsWith('http') ? url : `${STORAGE_URL}/${url}`;
-}
+import { resolveProductImage } from '../utils/imageUrl';
 
 function formatPrice(price) {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
@@ -192,9 +185,9 @@ export default function ShopPage() {
                   >
                     <Link to={`/shop/${product.slug}`} className="group block">
                       <div className="aspect-[3/4] rounded-xl bg-ivory-dark overflow-hidden relative">
-                        {getImageUrl(product) ? (
+                        {resolveProductImage(product) ? (
                           <img
-                            src={getImageUrl(product)}
+                            src={resolveProductImage(product)}
                             alt={product.primary_image?.alt_text || product.name}
                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                           />

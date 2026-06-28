@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { resolveProductImage } from '../../utils/imageUrl';
 
 /* ═══════════════════════════════════════════════════════════════════
    TRUE INFINITE SLIDER
@@ -30,11 +31,6 @@ const FALLBACK_GRADIENTS = [
   'linear-gradient(155deg,#c8ccd8 0%,#6878a8 100%)',
 ];
 
-function getImg(p) {
-  return p?.primary_image?.image_url || p?.thumbnail || p?.image_url || null;
-}
-
-/* padding left of the track so active card appears centred-ish */
 const PAD_LEFT = 'clamp(24px, 4vw, 64px)';
 
 export default function FeaturedSlider({ products }) {
@@ -229,7 +225,7 @@ export default function FeaturedSlider({ products }) {
               const rotateY = offset * -6;
               const tz      = isActive ? 0 : -absOff * 30;
               const opacity = isActive ? 1 : Math.max(0.50, 1 - absOff * 0.18);
-              const img     = getImg(product);
+              const img     = resolveProductImage(product);
 
               return (
                 <div

@@ -3,15 +3,15 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { productAPI, wishlistAPI } from '../api';
 import { useCart } from '../context/CartContext';
-import { STORAGE_URL } from '../config';
 import ReviewsSection from '../components/product/ReviewsSection';
+import { resolveImageUrl, resolveProductImage } from '../utils/imageUrl';
 
 /* ─── helpers ─────────────────────────────────────────────────────── */
 function getImg(src) {
   if (!src) return null;
   const url = src?.image_url || src?.primary_image?.image_url || src?.thumbnail || src;
   if (!url || typeof url !== 'string') return null;
-  return url.startsWith('http') ? url : `${STORAGE_URL}/${url}`;
+  return resolveImageUrl(url);
 }
 
 function fmtPrice(p) {

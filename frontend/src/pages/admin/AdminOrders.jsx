@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { adminAPI } from '../../api';
 import AdminLayout, { AdminCard, Badge } from './AdminLayout';
+import { resolveProductImage } from '../../utils/imageUrl';
 
 const STATUSES = ['pending','confirmed','processing','shipped','delivered','cancelled','refunded'];
 
@@ -147,8 +148,8 @@ export function AdminOrderDetail() {
                 {order.items?.map(item => (
                   <div key={item.id} className="flex items-center gap-4 px-5 py-3">
                     <div className="w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden bg-gray-100">
-                      {item.product?.thumbnail
-                        ? <img src={item.product.thumbnail} alt="" className="w-full h-full object-cover" />
+                      {resolveProductImage(item.product)
+                        ? <img src={resolveProductImage(item.product)} alt="" className="w-full h-full object-cover" />
                         : <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
                             {item.product?.name?.charAt(0)}
                           </div>

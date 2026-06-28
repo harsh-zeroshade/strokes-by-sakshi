@@ -282,7 +282,7 @@ class AuthController extends Controller
             'name'       => 'sometimes|string|max:255',
             'phone'      => 'sometimes|string|max:20',
             'bio'        => 'sometimes|nullable|string|max:1000',
-            'avatar_url' => 'sometimes|nullable|url',
+            'avatar_url' => 'sometimes|nullable|url|starts_with:https://',
         ]);
 
         $user->update($validated);

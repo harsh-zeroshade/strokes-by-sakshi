@@ -28,11 +28,13 @@ Route::get('/cors-test', function () {
 |--------------------------------------------------------------------------
 */
 
-// Auth
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/otp/send', [AuthController::class, 'sendOtp']);
-Route::post('/otp/verify', [AuthController::class, 'verifyOtp']);
+// Auth — rate-limited to reduce brute-force and OTP abuse
+Route::middleware('throttle:10,1')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/otp/verify', [AuthController::class, 'verifyOtp']);
+});
+Route::post('/otp/send', [AuthController::class, 'sendOtp'])->middleware('throttle:5,1');
 Route::get('/auth/google/redirect', [AuthController::class, 'googleRedirect']);
 Route::get('/auth/google/callback', [AuthController::class, 'googleCallback']);
 
@@ -56,7 +58,7 @@ Route::post('/cart/coupon', [CartController::class, 'applyCoupon']);
 Route::delete('/cart/coupon', [CartController::class, 'removeCoupon']);
 
 // Custom Orders
-Route::post('/custom-orders', [CustomOrderController::class, 'store']);
+Route::post('/custom-orders', [CustomOrderController::class, 'store'])->middleware('throttle:10,1');
 Route::post('/custom-orders/estimate', [CustomOrderController::class, 'calculateEstimate']);
 Route::get('/custom-orders/track/{orderNumber}', [CustomOrderController::class, 'track']);
 

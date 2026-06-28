@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { adminAPI } from '../../api';
 import AdminLayout, { AdminCard, Badge } from './AdminLayout';
+import { resolveStoragePath } from '../../utils/imageUrl';
 
 const STATUSES = ['draft','pending','in_review','quote_sent','quote_approved','in_progress','shipped','delivered','cancelled'];
 
@@ -138,7 +139,7 @@ function CommissionCard({ order, dark, onUpdate }) {
           {order.files.map(f => (
             <a
               key={f.id}
-              href={`http://localhost:8000/storage/${f.file_path}`}
+              href={resolveStoragePath(f.file_path)}
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs px-2 py-1 rounded flex items-center gap-1"

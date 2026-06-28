@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authAPI } from '../api';
-import { STORAGE_URL } from '../config';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const AuthContext = createContext(null);
 
@@ -17,9 +17,8 @@ export function AuthProvider({ children }) {
   // Normalize avatar URLs — Cloudinary URLs are always full https://
   const normalizeUser = (userData) => {
     if (!userData) return userData;
-    // If it's a local storage path (legacy), prepend STORAGE_URL
-    if (userData.avatar_url && !userData.avatar_url.startsWith('http') && userData.avatar_url.startsWith('/storage')) {
-      return { ...userData, avatar_url: `${STORAGE_URL}${userData.avatar_url}` };
+    if (userData.avatar_url) {
+      return { ...userData, avatar_url: resolveImageUrl(userData.avatar_url) };
     }
     return userData;
   };
@@ -102,7 +101,7 @@ export function AuthProvider({ children }) {
           window.removeEventListener('message', handleMessage);
           if (event.data.token) {
             localStorage.setItem('token', event.data.token);
-            setUser(event.data.user);
+            setUser(normalizeUser(event.data.user));
             window.dispatchEvent(new CustomEvent('auth:login'));
             resolve(event.data);
           } else {
@@ -142,10 +141,7 @@ export function AuthProvider({ children }) {
     const fd = new FormData();
     fd.append('avatar', file);
     const { data } = await authAPI.uploadAvatar(fd);
-    // Normalize the returned avatar URL
-    const avatarUrl = data.avatar_url && !data.avatar_url.startsWith('http') && data.avatar_url.startsWith('/storage')
-      ? `${STORAGE_URL}${data.avatar_url}`
-      : data.avatar_url;
+    const avatarUrl = resolveImageUrl(data.avatar_url);
     setUser(prev => ({ ...prev, avatar_url: avatarUrl }));
     return data;
   };

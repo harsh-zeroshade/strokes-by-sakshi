@@ -16,6 +16,11 @@ class OtpCode extends Model
         'used_at',
     ];
 
+    protected $hidden = [
+        'code',
+        'password',
+    ];
+
     protected $casts = [
         'expires_at' => 'datetime',
         'used_at' => 'datetime',

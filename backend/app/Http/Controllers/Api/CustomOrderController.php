@@ -87,7 +87,13 @@ class CustomOrderController extends Controller
 
     public function show(CustomOrder $order): JsonResponse
     {
-        if ($order->user_id && $order->user_id !== auth()->id()) {
+        $user = auth()->user();
+
+        if ($order->user_id) {
+            if (!$user || ($order->user_id !== $user->id && !$user->is_admin)) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+        } elseif (!$user?->is_admin) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -97,6 +103,10 @@ class CustomOrderController extends Controller
 
     public function uploadFiles(Request $request, CustomOrder $order): JsonResponse
     {
+        if ($response = $this->authorizeCustomOrder($request, $order)) {
+            return $response;
+        }
+
         $validated = $request->validate([
             'files' => 'required|array',
             'files.*' => 'file|mimes:jpg,jpeg,png,gif,webp,pdf,svg|max:10240',
@@ -120,8 +130,12 @@ class CustomOrderController extends Controller
         ]);
     }
 
-    public function removeFile(CustomOrderFile $file): JsonResponse
+    public function removeFile(Request $request, CustomOrderFile $file): JsonResponse
     {
+        if ($response = $this->authorizeCustomOrder($request, $file->customOrder)) {
+            return $response;
+        }
+
         Storage::disk($file->disk)->delete($file->file_path);
         $file->delete();
         return response()->json(['message' => 'File removed']);
@@ -130,17 +144,24 @@ class CustomOrderController extends Controller
     public function track(string $orderNumber): JsonResponse
     {
         $order = CustomOrder::where('order_number', $orderNumber)
-            ->with('files')
             ->firstOrFail();
 
-        return response()->json($order);
+        return response()->json([
+            'order_number' => $order->order_number,
+            'status' => $order->status,
+            'order_type' => $order->order_type,
+            'created_at' => $order->created_at,
+            'updated_at' => $order->updated_at,
+            'final_price' => $order->final_price,
+            'estimated_price' => $order->estimated_price,
+        ]);
     }
 
     public function calculateEstimate(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'order_type' => 'required|string',
-            'size' => 'required|string',
+            'order_type' => 'required|string|in:sketch,portrait,acrylic_painting,digital_illustration,custom_canvas,other',
+            'size' => 'required|string|in:small,medium,large,extra_large',
             'urgency' => 'required|string|in:standard,expedited,rush',
             'is_framed' => 'boolean',
         ]);
@@ -184,5 +205,24 @@ class CustomOrderController extends Controller
                 'framing_cost' => $framingCost,
             ],
         ]);
+    }
+
+    private function authorizeCustomOrder(Request $request, CustomOrder $order): ?JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        if ($order->user_id && $order->user_id !== $user->id && !$user->is_admin) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if (!$order->user_id && !$user->is_admin) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        return null;
     }
 }

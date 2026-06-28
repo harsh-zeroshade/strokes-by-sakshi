@@ -71,6 +71,10 @@ class CartController extends Controller
 
     public function update(Request $request, CartItem $item): JsonResponse
     {
+        if ($response = $this->authorizeCartItem($request, $item)) {
+            return $response;
+        }
+
         $validated = $request->validate([
             'quantity' => 'required|integer|min:1|max:10',
         ]);
@@ -86,8 +90,12 @@ class CartController extends Controller
         return response()->json($item->cart);
     }
 
-    public function remove(CartItem $item): JsonResponse
+    public function remove(Request $request, CartItem $item): JsonResponse
     {
+        if ($response = $this->authorizeCartItem($request, $item)) {
+            return $response;
+        }
+
         $cart = $item->cart;
         $item->delete();
         $cart->recalculate();
@@ -135,6 +143,10 @@ class CartController extends Controller
 
     public function moveToWishlist(Request $request, CartItem $item): JsonResponse
     {
+        if ($response = $this->authorizeCartItem($request, $item)) {
+            return $response;
+        }
+
         if ($request->user()) {
             $request->user()->wishlists()->firstOrCreate(['product_id' => $item->product_id]);
         }
@@ -142,8 +154,12 @@ class CartController extends Controller
         return response()->json(['message' => 'Moved to wishlist']);
     }
 
-    public function saveForLater(CartItem $item): JsonResponse
+    public function saveForLater(Request $request, CartItem $item): JsonResponse
     {
+        if ($response = $this->authorizeCartItem($request, $item)) {
+            return $response;
+        }
+
         $item->update(['is_saved_for_later' => true]);
         return response()->json(['message' => 'Saved for later']);
     }
@@ -179,5 +195,16 @@ class CartController extends Controller
         }
         $sessionId = $request->header('X-Session-ID') ?? ('sess_' . uniqid('', true));
         return Cart::firstOrCreate(['session_id' => $sessionId]);
+    }
+
+    private function authorizeCartItem(Request $request, CartItem $item): ?JsonResponse
+    {
+        $cart = $this->getCart($request);
+
+        if (!$cart || $item->cart_id !== $cart->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        return null;
     }
 }
