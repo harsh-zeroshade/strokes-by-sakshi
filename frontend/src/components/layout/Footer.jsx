@@ -185,6 +185,21 @@ export default function Footer() {
           </p>
         </div>
 
+        {/* Center — credits */}
+        <div className="hidden lg:flex flex-col items-center gap-1">
+          <p className="text-[11px]" style={{ color:'rgba(255,255,255,0.32)', fontFamily:"'Inter',sans-serif" }}>
+            Created by <span style={{ color:'rgba(255,255,255,0.6)' }}>Harsh Pathak</span>
+          </p>
+          <a href="mailto:harsh.zeroshade@gmail.com"
+            className="text-[11px] transition-colors duration-200"
+            style={{ color:'rgba(255,255,255,0.28)', textDecoration:'none', fontFamily:"'Inter',sans-serif" }}
+            onMouseEnter={e=>e.currentTarget.style.color='rgba(255,255,255,0.7)'}
+            onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.28)'}
+          >
+            harsh.zeroshade@gmail.com
+          </a>
+        </div>
+
         {/* Right — social icons with SVG */}
         <div className="flex items-center gap-2">
           {/* Instagram */}
@@ -243,6 +258,21 @@ export default function Footer() {
             </svg>
           </a>
         </div>
+      </div>
+
+      {/* ── MOBILE CREDITS ── */}
+      <div className="lg:hidden max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 pb-6 -mt-1">
+        <p className="text-[11px]" style={{ color:'rgba(255,255,255,0.32)', fontFamily:"'Inter',sans-serif" }}>
+          Created by <span style={{ color:'rgba(255,255,255,0.6)' }}>Harsh Pathak</span> ·{' '}
+          <a href="mailto:harsh.zeroshade@gmail.com"
+            className="transition-colors duration-200"
+            style={{ color:'rgba(255,255,255,0.28)', textDecoration:'none' }}
+            onMouseEnter={e=>e.currentTarget.style.color='rgba(255,255,255,0.7)'}
+            onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.28)'}
+          >
+            harsh.zeroshade@gmail.com
+          </a>
+        </p>
       </div>
     </footer>
   );
