@@ -26,7 +26,9 @@ Route::get('/debug-config', function () {
     $mailResult = 'not tested';
     try {
         \Illuminate\Support\Facades\Mail::raw('OTP test email from Strokes by Sakshi', function ($m) {
-            $m->to(env('MAIL_USERNAME'))->subject('Test OTP Mail');
+            $m->to(env('MAIL_USERNAME'))
+              ->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'))
+              ->subject('Test OTP Mail');
         });
         $mailResult = 'sent ok';
     } catch (\Exception $e) {
@@ -35,13 +37,14 @@ Route::get('/debug-config', function () {
 
     // Test Google redirect URL
     $googleUrl = 'not tested';
+    $googleError = null;
     try {
         $googleUrl = \Laravel\Socialite\Facades\Socialite::driver('google')
             ->stateless()
             ->redirect()
             ->getTargetUrl();
     } catch (\Exception $e) {
-        $googleUrl = 'ERROR: ' . $e->getMessage();
+        $googleError = $e->getMessage();
     }
 
     return response()->json([
@@ -53,9 +56,11 @@ Route::get('/debug-config', function () {
             'result'   => $mailResult,
         ],
         'google' => [
-            'client_id'    => substr(env('GOOGLE_CLIENT_ID', ''), 0, 20) . '...',
-            'redirect_uri' => env('GOOGLE_REDIRECT_URI'),
-            'url_generated' => $googleUrl !== 'not tested' ? (str_contains($googleUrl, 'ERROR') ? $googleUrl : 'OK — ' . substr($googleUrl, 0, 80) . '...') : 'not tested',
+            'client_id_set'  => !empty(env('GOOGLE_CLIENT_ID')),
+            'client_id_peek' => substr(env('GOOGLE_CLIENT_ID', 'NOT SET'), 0, 30) . '...',
+            'redirect_uri'   => env('GOOGLE_REDIRECT_URI', 'NOT SET'),
+            'url_ok'         => $googleError === null,
+            'url_peek'       => $googleError ?? substr($googleUrl, 0, 120) . '...',
         ],
         'app_url' => env('APP_URL'),
         'env'     => env('APP_ENV'),
