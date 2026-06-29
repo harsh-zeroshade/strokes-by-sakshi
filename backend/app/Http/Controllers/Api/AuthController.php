@@ -136,20 +136,22 @@ class AuthController extends Controller
         ]);
 
         // Send OTP via email
+        $mailError = null;
         try {
             Mail::send('emails.otp', ['code' => $code, 'type' => $type], function ($message) use ($email) {
                 $message->to($email)
                     ->subject('Your Strokes by Sakshi Verification Code');
             });
         } catch (\Exception $e) {
-            // If mail fails, still return the OTP in dev/error response
-            // In production, log the error but don't expose to user
+            $mailError = $e->getMessage();
         }
 
         return response()->json([
             'message' => 'Verification code sent to your email.',
-            // Remove in production — only for dev convenience
             'debug_code' => app()->environment('local', 'testing') ? $code : null,
+            // Temporary: expose mail error so we can diagnose — remove after fixing
+            'mail_error' => app()->environment('production') ? ($mailError ? 'mail_failed' : null) : $mailError,
+            '_mail_debug' => $mailError,
         ]);
     }
 
