@@ -198,9 +198,7 @@ export default function Footer() {
               Harsh Pathak
             </a>
           </p>
-          <span className="text-[11px]" style={{ color:'rgba(255,255,255,0.28)', fontFamily:"'Inter',sans-serif" }}>
-            harsh.zeroshade@gmail.com
-          </span>
+         
         </div>
 
         {/* Right — social icons with SVG */}

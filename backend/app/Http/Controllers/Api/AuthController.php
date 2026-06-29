@@ -229,9 +229,12 @@ class AuthController extends Controller
     public function googleCallback(Request $request): JsonResponse
     {
         try {
-            $googleUser = Socialite::driver('google')->stateless()->user();
+            // Stateless — exchange the code Google sent to the frontend redirect URI
+            $googleUser = Socialite::driver('google')
+                ->stateless()
+                ->user();
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Google authentication failed.'], 401);
+            return response()->json(['message' => 'Google authentication failed: ' . $e->getMessage()], 401);
         }
 
         // Find or create user

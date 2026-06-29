@@ -20,6 +20,48 @@ Route::get('/cors-test', function () {
     ]);
 });
 
+// ── DEBUG: test Google config & mail (remove after fixing) ──
+Route::get('/debug-config', function () {
+    // Test mail
+    $mailResult = 'not tested';
+    try {
+        \Illuminate\Support\Facades\Mail::raw('OTP test email from Strokes by Sakshi', function ($m) {
+            $m->to(env('MAIL_USERNAME'))->subject('Test OTP Mail');
+        });
+        $mailResult = 'sent ok';
+    } catch (\Exception $e) {
+        $mailResult = $e->getMessage();
+    }
+
+    // Test Google redirect URL
+    $googleUrl = 'not tested';
+    try {
+        $googleUrl = \Laravel\Socialite\Facades\Socialite::driver('google')
+            ->stateless()
+            ->redirect()
+            ->getTargetUrl();
+    } catch (\Exception $e) {
+        $googleUrl = 'ERROR: ' . $e->getMessage();
+    }
+
+    return response()->json([
+        'mail' => [
+            'mailer'   => env('MAIL_MAILER'),
+            'host'     => env('MAIL_HOST'),
+            'port'     => env('MAIL_PORT'),
+            'username' => env('MAIL_USERNAME'),
+            'result'   => $mailResult,
+        ],
+        'google' => [
+            'client_id'    => substr(env('GOOGLE_CLIENT_ID', ''), 0, 20) . '...',
+            'redirect_uri' => env('GOOGLE_REDIRECT_URI'),
+            'url_generated' => $googleUrl !== 'not tested' ? (str_contains($googleUrl, 'ERROR') ? $googleUrl : 'OK — ' . substr($googleUrl, 0, 80) . '...') : 'not tested',
+        ],
+        'app_url' => env('APP_URL'),
+        'env'     => env('APP_ENV'),
+    ]);
+});
+
 // Handle CORS preflight requests — managed by Laravel's built-in CORS middleware (config/cors.php)
 
 /*
