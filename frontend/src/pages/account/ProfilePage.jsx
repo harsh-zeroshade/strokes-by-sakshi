@@ -2,7 +2,29 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import * as THREE from 'three';
+import Cropper from 'react-easy-crop';
 import { useAuth } from '../../context/AuthContext';
+
+/* ── Crop helpers ── */
+function createImage(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.addEventListener('load', () => resolve(img));
+    img.addEventListener('error', err => reject(err));
+    img.setAttribute('crossOrigin', 'anonymous');
+    img.src = url;
+  });
+}
+
+async function getCroppedBlob(imageSrc, pixelCrop) {
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width  = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+  ctx.drawImage(image, pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height, 0, 0, pixelCrop.width, pixelCrop.height);
+  return new Promise(resolve => canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.92));
+}
 
 /* ─── theme ─────────────────────────────────────────────── */
 const ease = [0.16, 1, 0.3, 1];
@@ -104,85 +126,220 @@ function AmbientScene({ mountRef }) {
   return null;
 }
 
-/* ─── Avatar uploader ─────────────────────────────────── */
+/* ─── Avatar uploader with crop ──────────────────────── */
 function AvatarUploader({ user, onUploaded }) {
   const { uploadAvatar } = useAuth();
-  const fileRef   = useRef(null);
-  const [prev,    setPrev]    = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState('');
+  const fileRef = useRef(null);
 
-  const initials = user?.name?.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase() || '?';
-  const src = prev || user?.avatar_url || null;
-  const [imgError, setImgError] = useState(false);
+  /* displayed avatar */
+  const [preview,   setPreview]   = useState(null);   // final preview after crop
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState('');
+  const [imgError,  setImgError]  = useState(false);
 
-  // Reset error when src changes
+  /* crop modal state */
+  const [cropSrc,   setCropSrc]   = useState(null);   // raw file object-url fed into Cropper
+  const [crop,      setCrop]      = useState({ x: 0, y: 0 });
+  const [zoom,      setZoom]      = useState(1);
+  const [rotation,  setRotation]  = useState(0);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+
+  const initials = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '?';
+  const src = preview || user?.avatar_url || null;
+
   useEffect(() => { setImgError(false); }, [src]);
 
-  const onFile = async e => {
+  /* open file picker */
+  const pickFile = () => fileRef.current?.click();
+
+  /* file selected → open crop modal */
+  const onFileChange = e => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 3 * 1024 * 1024) { setError('Max file size is 3 MB.'); return; }
-    setPrev(URL.createObjectURL(file));
+    if (file.size > 10 * 1024 * 1024) { setError('Max file size is 10 MB.'); return; }
+    setError('');
+    const url = URL.createObjectURL(file);
+    setCropSrc(url);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setRotation(0);
+    if (fileRef.current) fileRef.current.value = '';
+  };
+
+  const onCropComplete = useCallback((_, pixels) => {
+    setCroppedAreaPixels(pixels);
+  }, []);
+
+  /* cancel crop */
+  const cancelCrop = () => {
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc(null);
+  };
+
+  /* apply crop → upload */
+  const applyCrop = async () => {
+    if (!croppedAreaPixels) return;
     setLoading(true); setError('');
     try {
+      const blob = await getCroppedBlob(cropSrc, croppedAreaPixels);
+      const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
+      const objectUrl = URL.createObjectURL(blob);
+      setCropSrc(null);
+      setPreview(objectUrl);
       const data = await uploadAvatar(file);
       onUploaded?.(data.avatar_url);
     } catch {
       setError('Upload failed. Please try again.');
-      setPrev(null);
+      setPreview(null);
     } finally {
       setLoading(false);
-      if (fileRef.current) fileRef.current.value = '';
     }
   };
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      {/* Circle avatar */}
-      <motion.button
-        whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-        onClick={() => fileRef.current?.click()}
-        className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden group cursor-pointer flex-shrink-0 ring-2 ring-terracotta/20 hover:ring-terracotta/50 transition-all duration-300"
-        aria-label="Change profile picture"
-      >
-        {src && !imgError ? (
-          <img src={src} alt={user?.name} className="w-full h-full object-cover"
-            onError={() => setImgError(true)} />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center font-display text-3xl text-ivory"
-            style={{ background: `hsl(${(user?.id||0)*47+10},42%,52%)` }}>
-            {initials}
-          </div>
-        )}
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
-          {loading ? (
-            <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              className="w-5 h-5 rounded-full border-2 border-white/40 border-t-white" />
+    <>
+      <div className="flex flex-col items-center gap-3">
+        {/* Circle avatar */}
+        <motion.button
+          whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+          onClick={pickFile}
+          className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden group cursor-pointer flex-shrink-0 ring-2 ring-terracotta/20 hover:ring-terracotta/50 transition-all duration-300"
+          aria-label="Change profile picture"
+        >
+          {src && !imgError ? (
+            <img src={src} alt={user?.name} className="w-full h-full object-cover"
+              onError={() => setImgError(true)} />
           ) : (
-            <>
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-              </svg>
-              <span className="text-[10px] text-white uppercase tracking-wider">Change</span>
-            </>
+            <div className="w-full h-full flex items-center justify-center font-display text-3xl text-ivory"
+              style={{ background: `hsl(${(user?.id || 0) * 47 + 10},42%,52%)` }}>
+              {initials}
+            </div>
           )}
-        </div>
-      </motion.button>
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
+            {loading ? (
+              <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                className="w-5 h-5 rounded-full border-2 border-white/40 border-t-white" />
+            ) : (
+              <>
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <span className="text-[10px] text-white uppercase tracking-wider">Change</span>
+              </>
+            )}
+          </div>
+        </motion.button>
 
-      <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={onFile} />
-      <p className="text-[10px] text-charcoal-muted dark:text-[#9A9590] text-center">
-        JPG, PNG or WebP · Max 3 MB
-      </p>
+        <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={onFileChange} />
+        <p className="text-[10px] text-charcoal-muted dark:text-[#9A9590] text-center">
+          JPG, PNG or WebP · Crop & adjust after selection
+        </p>
+        <AnimatePresence>
+          {error && (
+            <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className="text-[11px] text-error">{error}</motion.p>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* ── Crop modal ── */}
       <AnimatePresence>
-        {error && (
-          <motion.p initial={{opacity:0,y:-4}} animate={{opacity:1,y:0}} exit={{opacity:0}}
-            className="text-[11px] text-error">{error}</motion.p>
+        {cropSrc && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+            style={{ background: 'rgba(0,0,0,0.85)' }}
+          >
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.92, opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.16,1,0.3,1] }}
+              className="w-full max-w-lg rounded-2xl overflow-hidden"
+              style={{ background: '#1e1c18', border: '1px solid rgba(255,255,255,0.08)' }}
+            >
+              {/* Modal header */}
+              <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                <div>
+                  <h3 className="font-display text-base text-[#F0EDE8]">Adjust Photo</h3>
+                  <p className="text-[10px] text-[#9A9590] mt-0.5 uppercase tracking-[0.18em]">Drag to reposition · Pinch or scroll to zoom</p>
+                </div>
+                <button onClick={cancelCrop} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors text-[#9A9590] hover:text-[#F0EDE8]">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+
+              {/* Crop area */}
+              <div className="relative" style={{ height: 320, background: '#0d0b08' }}>
+                <Cropper
+                  image={cropSrc}
+                  crop={crop}
+                  zoom={zoom}
+                  rotation={rotation}
+                  aspect={1}
+                  cropShape="round"
+                  showGrid={false}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropComplete={onCropComplete}
+                  style={{
+                    containerStyle: { background: '#0d0b08' },
+                    cropAreaStyle: { border: '2px solid #C7694F', boxShadow: '0 0 0 9999px rgba(0,0,0,0.6)' },
+                  }}
+                />
+              </div>
+
+              {/* Controls */}
+              <div className="px-5 py-4 space-y-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                {/* Zoom */}
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] uppercase tracking-[0.18em] text-[#9A9590] w-14 flex-shrink-0">Zoom</span>
+                  <input type="range" min={1} max={3} step={0.01} value={zoom}
+                    onChange={e => setZoom(Number(e.target.value))}
+                    className="flex-1 accent-terracotta h-1 rounded-full cursor-pointer" />
+                  <span className="text-[11px] text-[#9A9590] w-8 text-right">{zoom.toFixed(1)}×</span>
+                </div>
+                {/* Rotation */}
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] uppercase tracking-[0.18em] text-[#9A9590] w-14 flex-shrink-0">Rotate</span>
+                  <input type="range" min={-180} max={180} step={1} value={rotation}
+                    onChange={e => setRotation(Number(e.target.value))}
+                    className="flex-1 accent-terracotta h-1 rounded-full cursor-pointer" />
+                  <span className="text-[11px] text-[#9A9590] w-8 text-right">{rotation}°</span>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3 pt-1">
+                  <button onClick={cancelCrop}
+                    className="flex-1 py-2.5 rounded-xl text-xs uppercase tracking-[0.18em] text-[#9A9590] border hover:border-[#9A9590] transition-colors"
+                    style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+                    Cancel
+                  </button>
+                  <button onClick={applyCrop} disabled={loading}
+                    className="flex-1 py-2.5 rounded-xl text-xs uppercase tracking-[0.18em] text-ivory font-medium transition-colors disabled:opacity-50"
+                    style={{ background: '#C7694F' }}
+                    onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#a85540'; }}
+                    onMouseLeave={e => { if (!loading) e.currentTarget.style.background = '#C7694F'; }}>
+                    {loading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                          className="w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white" />
+                        Uploading…
+                      </span>
+                    ) : 'Apply & Save'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 }
 

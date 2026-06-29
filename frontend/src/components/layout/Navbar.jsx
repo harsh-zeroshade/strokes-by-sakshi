@@ -5,6 +5,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { useTheme } from '../../context/ThemeContext';
 import Logo from '../ui/Logo';
+import SocialIcons from '../ui/SocialIcons';
+import { SITE_CONFIG } from '../../config';
 
 const NAV_LINKS = [
   { label: 'Shop',       path: '/shop'       },
@@ -197,8 +199,8 @@ export default function Navbar() {
                       </div>
 
                       {/* Account links — staggered reveal */}
-                      <div className="flex-1 flex items-center px-8 sm:px-12 lg:px-16 overflow-hidden">
-                        <nav style={{ display:'flex', flexDirection:'column', gap:0 }}>
+                      <div className="flex-1 flex items-center px-8 sm:px-12 lg:px-16 overflow-y-auto min-h-0">
+                        <nav style={{ display:'flex', flexDirection:'column', gap:0, width:'100%', paddingTop:8, paddingBottom:8 }}>
                           {[
                             { to:'/account',               label:'My Profile'    },
                             { to:'/account/orders',        label:'My Orders'     },
@@ -217,7 +219,7 @@ export default function Navbar() {
                                 onMouseEnter={e=>e.currentTarget.style.color='white'}
                                 onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.18)'}
                               >
-                                <span style={{ fontFamily:"'Playfair Display',serif", fontSize:'clamp(2rem,5vw,4rem)', fontWeight:300, letterSpacing:'-1.5px', lineHeight:1.15 }}>
+                                <span style={{ fontFamily:"'Playfair Display',serif", fontSize:'clamp(1.8rem,5vw,4rem)', fontWeight:300, letterSpacing:'-1.5px', lineHeight:1.15 }}>
                                   {item.label}
                                 </span>
                               </Link>
@@ -237,16 +239,7 @@ export default function Navbar() {
                           Sign Out
                         </button>
                         <div style={{ display:'flex', gap:16 }}>
-                          {[
-                            { label:'Instagram', href:'https://instagram.com/strokesbysakshi' },
-                            { label:'WhatsApp',  href:'https://wa.me/919876543210' },
-                          ].map(s => (
-                            <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
-                              style={{ color:'rgba(255,255,255,0.28)', fontSize:11, letterSpacing:1, textDecoration:'none', fontFamily:"'Inter',sans-serif", textTransform:'uppercase', transition:'color 0.2s' }}
-                              onMouseEnter={e=>e.currentTarget.style.color='white'}
-                              onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.28)'}
-                            >{s.label}</a>
-                          ))}
+                          <SocialIcons links={SITE_CONFIG.social} />
                         </div>
                       </motion.div>
                     </motion.div>
@@ -343,8 +336,8 @@ export default function Navbar() {
               </div>
 
               {/* Nav links — staggered reveal */}
-              <div className="flex-1 flex items-center px-8 sm:px-12 lg:px-16 overflow-hidden">
-                <nav style={{ display:'flex', flexDirection:'column', gap:0 }}>
+              <div className="flex-1 flex items-center px-8 sm:px-12 lg:px-16 overflow-y-auto min-h-0">
+                <nav style={{ display:'flex', flexDirection:'column', gap:0, width:'100%', paddingTop:8, paddingBottom:8 }}>
                   {MENU_LINKS.map((item, i) => (
                     <motion.div key={item.path}
                       initial={{ opacity:0, y:40 }}
@@ -358,7 +351,7 @@ export default function Navbar() {
                         onMouseLeave={e=>{ if(!isActive(item.path)) e.currentTarget.style.color='rgba(255,255,255,0.18)'; }}
                       >
                         <span style={{ fontFamily:"'Inter',sans-serif", fontSize:11, letterSpacing:2, color:'rgba(255,255,255,0.25)', flexShrink:0, paddingTop:6 }}>{item.num}</span>
-                        <span style={{ fontFamily:"'Playfair Display',serif", fontSize:'clamp(2.4rem,6vw,5rem)', fontWeight:300, letterSpacing:'-1.5px', lineHeight:1.15 }}>
+                        <span style={{ fontFamily:"'Playfair Display',serif", fontSize:'clamp(1.8rem,5vw,5rem)', fontWeight:300, letterSpacing:'-1.5px', lineHeight:1.15 }}>
                           {item.label}
                         </span>
                         {/* Animated arrow on active */}
@@ -395,16 +388,7 @@ export default function Navbar() {
                   )}
                 </div>
                 <div style={{ display:'flex', gap:16 }}>
-                  {[
-                    { label:'Instagram', href:'https://instagram.com/strokesbysakshi' },
-                    { label:'WhatsApp',  href:'https://wa.me/919876543210' },
-                  ].map(s => (
-                    <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
-                      style={{ color:'rgba(255,255,255,0.28)', fontSize:11, letterSpacing:1, textDecoration:'none', fontFamily:"'Inter',sans-serif", textTransform:'uppercase', transition:'color 0.2s' }}
-                      onMouseEnter={e=>e.currentTarget.style.color='white'}
-                      onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.28)'}
-                    >{s.label}</a>
-                  ))}
+                  <SocialIcons links={SITE_CONFIG.social} />
                 </div>
               </motion.div>
             </motion.div>

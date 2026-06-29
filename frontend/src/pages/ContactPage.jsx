@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import * as THREE from 'three';
 import { SITE_CONFIG } from '../config';
+import SocialIcons from '../components/ui/SocialIcons';
 
 const ease = [0.16, 1, 0.3, 1];
 const fadeUp = (delay = 0) => ({
@@ -207,13 +208,8 @@ export default function ContactPage() {
               </div>
 
               {/* Social row */}
-              <div className="flex flex-wrap gap-3 pt-2">
-                {Object.entries(SITE_CONFIG.social).map(([platform, url]) => (
-                  <a key={platform} href={url} target="_blank" rel="noopener noreferrer"
-                    className="text-[10px] uppercase tracking-[0.18em] px-3 py-2 rounded-lg border border-charcoal/10 dark:border-white/8 text-charcoal-muted dark:text-[#9A9590] hover:border-terracotta hover:text-terracotta dark:hover:border-terracotta dark:hover:text-terracotta transition-all duration-200 capitalize">
-                    {platform}
-                  </a>
-                ))}
+              <div className="pt-2">
+                <SocialIcons links={SITE_CONFIG.social} />
               </div>
             </motion.div>
 

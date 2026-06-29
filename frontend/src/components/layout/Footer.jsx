@@ -188,16 +188,19 @@ export default function Footer() {
         {/* Center — credits */}
         <div className="hidden lg:flex flex-col items-center gap-1">
           <p className="text-[11px]" style={{ color:'rgba(255,255,255,0.32)', fontFamily:"'Inter',sans-serif" }}>
-            Created by <span style={{ color:'rgba(255,255,255,0.6)' }}>Harsh Pathak</span>
+            Created by{' '}
+            <a href="mailto:harsh.zeroshade@gmail.com"
+              className="transition-colors duration-200"
+              style={{ color:'rgba(255,255,255,0.6)', textDecoration:'none' }}
+              onMouseEnter={e=>e.currentTarget.style.color='#C7694F'}
+              onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.6)'}
+            >
+              Harsh Pathak
+            </a>
           </p>
-          <a href="mailto:harsh.zeroshade@gmail.com"
-            className="text-[11px] transition-colors duration-200"
-            style={{ color:'rgba(255,255,255,0.28)', textDecoration:'none', fontFamily:"'Inter',sans-serif" }}
-            onMouseEnter={e=>e.currentTarget.style.color='rgba(255,255,255,0.7)'}
-            onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.28)'}
-          >
+          <span className="text-[11px]" style={{ color:'rgba(255,255,255,0.28)', fontFamily:"'Inter',sans-serif" }}>
             harsh.zeroshade@gmail.com
-          </a>
+          </span>
         </div>
 
         {/* Right — social icons with SVG */}
@@ -263,15 +266,15 @@ export default function Footer() {
       {/* ── MOBILE CREDITS ── */}
       <div className="lg:hidden max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 pb-6 -mt-1">
         <p className="text-[11px]" style={{ color:'rgba(255,255,255,0.32)', fontFamily:"'Inter',sans-serif" }}>
-          Created by <span style={{ color:'rgba(255,255,255,0.6)' }}>Harsh Pathak</span> ·{' '}
+          Created by{' '}
           <a href="mailto:harsh.zeroshade@gmail.com"
             className="transition-colors duration-200"
-            style={{ color:'rgba(255,255,255,0.28)', textDecoration:'none' }}
-            onMouseEnter={e=>e.currentTarget.style.color='rgba(255,255,255,0.7)'}
-            onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.28)'}
+            style={{ color:'rgba(255,255,255,0.6)', textDecoration:'none' }}
+            onMouseEnter={e=>e.currentTarget.style.color='#C7694F'}
+            onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.6)'}
           >
-            harsh.zeroshade@gmail.com
-          </a>
+            Harsh Pathak
+          </a>{' '}· harsh.zeroshade@gmail.com
         </p>
       </div>
     </footer>
