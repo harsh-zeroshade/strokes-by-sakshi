@@ -12,6 +12,12 @@ function Root() {
   const [appReady, setAppReady] = useState(false);
 
   useEffect(() => {
+    // Skip the intro loader entirely if this is the Google OAuth popup
+    if (window.location.pathname === '/auth/google/callback') {
+      setAppReady(true);
+      return;
+    }
+
     // Show loader for at least 1.8s so the Three.js animation is visible,
     // then fade out once fonts + assets are loaded.
     const fonts = document.fonts ? document.fonts.ready : Promise.resolve();

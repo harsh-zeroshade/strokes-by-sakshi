@@ -1,63 +1,76 @@
 import { useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import { authAPI } from '../../api';
 
 /**
- * This page opens in the Google OAuth popup window.
- * It receives the callback URL from the backend (with code + state),
- * then sends the auth result back to the opener window via postMessage.
+ * Opens in the Google OAuth popup.
+ * Reads code+state directly from window.location.search (no React Router dependency)
+ * so it works regardless of router hydration timing.
  */
 export default function GoogleCallbackPage() {
-  const [searchParams] = useSearchParams();
   const called = useRef(false);
 
   useEffect(() => {
     if (called.current) return;
     called.current = true;
 
-    const code = searchParams.get('code');
-    const state = searchParams.get('state');
+    // Read directly from the real URL — bypasses any router parsing issues
+    const params = new URLSearchParams(window.location.search);
+    const code  = params.get('code');
+    const state = params.get('state');
 
-    if (code && state) {
-      authAPI.googleCallback({ code, state })
-        .then(({ data }) => {
-          if (window.opener) {
-            window.opener.postMessage({
-              type: 'google-auth',
-              token: data.token,
-              user: data.user,
-            }, window.location.origin);
-          }
-        })
-        .catch((err) => {
-          if (window.opener) {
-            window.opener.postMessage({
-              type: 'google-auth',
-              error: err.response?.data?.message || 'Google authentication failed.',
-            }, window.location.origin);
-          }
-        })
-        .finally(() => {
-          window.close();
-        });
-    } else {
-      // Close if no code — likely an error
+    const sendError = (msg) => {
       if (window.opener) {
-        window.opener.postMessage({
-          type: 'google-auth',
-          error: 'No authorization code received.',
-        }, window.location.origin);
+        window.opener.postMessage({ type: 'google-auth', error: msg }, window.location.origin);
       }
       window.close();
+    };
+
+    if (!code) {
+      // Log what we actually got for debugging
+      console.error('GoogleCallback: no code found. search=', window.location.search, 'href=', window.location.href);
+      sendError('No authorization code received.');
+      return;
     }
-  }, [searchParams]);
+
+    authAPI.googleCallback({ code, state })
+      .then(({ data }) => {
+        if (window.opener) {
+          window.opener.postMessage({
+            type: 'google-auth',
+            token: data.token,
+            user:  data.user,
+          }, window.location.origin);
+        }
+      })
+      .catch((err) => {
+        if (window.opener) {
+          window.opener.postMessage({
+            type: 'google-auth',
+            error: err.response?.data?.message || 'Google authentication failed.',
+          }, window.location.origin);
+        }
+      })
+      .finally(() => {
+        window.close();
+      });
+  }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-ivory dark:bg-[#1A1814]">
-      <div className="text-center">
-        <div className="w-8 h-8 rounded-full border-2 border-terracotta border-t-transparent animate-spin mx-auto mb-4" />
-        <p className="text-sm text-charcoal-muted dark:text-[#9A9590]">Completing Google sign-in...</p>
+    <div style={{
+      minHeight: '100vh', display: 'flex', alignItems: 'center',
+      justifyContent: 'center', background: '#FAF7F2',
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{
+          width: 32, height: 32, borderRadius: '50%',
+          border: '2px solid #C7694F', borderTopColor: 'transparent',
+          animation: 'spin 0.8s linear infinite', margin: '0 auto 16px',
+        }} />
+        <p style={{ fontSize: 14, color: '#6B6B6B', fontFamily: 'Inter, sans-serif' }}>
+          Completing Google sign-in…
+        </p>
       </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
