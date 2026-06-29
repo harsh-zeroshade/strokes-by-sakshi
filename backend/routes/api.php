@@ -20,50 +20,21 @@ Route::get('/cors-test', function () {
     ]);
 });
 
-// ── DEBUG: test Google config & mail (remove after fixing) ──
+// ── DEBUG: dump env vars (remove after fixing) ──
 Route::get('/debug-config', function () {
-    // Test mail
-    $mailResult = 'not tested';
-    try {
-        \Illuminate\Support\Facades\Mail::raw('OTP test email from Strokes by Sakshi', function ($m) {
-            $m->to(env('MAIL_USERNAME'))
-              ->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'))
-              ->subject('Test OTP Mail');
-        });
-        $mailResult = 'sent ok';
-    } catch (\Exception $e) {
-        $mailResult = $e->getMessage();
-    }
-
-    // Test Google redirect URL
-    $googleUrl = 'not tested';
-    $googleError = null;
-    try {
-        $googleUrl = \Laravel\Socialite\Facades\Socialite::driver('google')
-            ->stateless()
-            ->redirect()
-            ->getTargetUrl();
-    } catch (\Exception $e) {
-        $googleError = $e->getMessage();
-    }
-
     return response()->json([
-        'mail' => [
-            'mailer'   => env('MAIL_MAILER'),
-            'host'     => env('MAIL_HOST'),
-            'port'     => env('MAIL_PORT'),
-            'username' => env('MAIL_USERNAME'),
-            'result'   => $mailResult,
-        ],
-        'google' => [
-            'client_id_set'  => !empty(env('GOOGLE_CLIENT_ID')),
-            'client_id_peek' => substr(env('GOOGLE_CLIENT_ID', 'NOT SET'), 0, 30) . '...',
-            'redirect_uri'   => env('GOOGLE_REDIRECT_URI', 'NOT SET'),
-            'url_ok'         => $googleError === null,
-            'url_peek'       => $googleError ?? substr($googleUrl, 0, 120) . '...',
-        ],
-        'app_url' => env('APP_URL'),
-        'env'     => env('APP_ENV'),
+        'app_url'          => env('APP_URL', 'NOT SET'),
+        'app_env'          => env('APP_ENV', 'NOT SET'),
+        'mail_mailer'      => env('MAIL_MAILER', 'NOT SET'),
+        'mail_host'        => env('MAIL_HOST', 'NOT SET'),
+        'mail_port'        => env('MAIL_PORT', 'NOT SET'),
+        'mail_user'        => env('MAIL_USERNAME', 'NOT SET'),
+        'mail_pass_set'    => !empty(env('MAIL_PASSWORD')),
+        'mail_enc'         => env('MAIL_ENCRYPTION', 'NOT SET'),
+        'google_id_set'    => !empty(env('GOOGLE_CLIENT_ID')),
+        'google_id_peek'   => substr(env('GOOGLE_CLIENT_ID', 'NOT SET'), 0, 20),
+        'google_secret_set'=> !empty(env('GOOGLE_CLIENT_SECRET')),
+        'google_redirect'  => env('GOOGLE_REDIRECT_URI', 'NOT SET'),
     ]);
 });
 
